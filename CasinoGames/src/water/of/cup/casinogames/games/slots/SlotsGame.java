@@ -9,6 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import water.of.cup.boardgames.BoardGames;
 import water.of.cup.boardgames.game.Button;
 import water.of.cup.boardgames.game.Clock;
 import water.of.cup.boardgames.game.Game;
@@ -63,6 +64,12 @@ public abstract class SlotsGame extends Game {
 	@Override
 	protected void startGame() {
 		initialBet = 5; // TODO: get initial bet
+		SlotsSpinner spinner = new SlotsSpinner(this, mapManager, 10);
+		spinner.runTaskTimer(BoardGames.getInstance(), 2, 2);
+	}
+	
+	protected void finishSpin() {
+		// TODO Auto-generated method stub
 		spin();
 		givePayout();
 		setButtonImages();
@@ -72,7 +79,7 @@ public abstract class SlotsGame extends Game {
 		endGame(null);
 	}
 
-	private void spin() {
+	protected void spin() {
 		boolean win = Math.random() < winRatio;
 
 		do {
@@ -124,7 +131,7 @@ public abstract class SlotsGame extends Game {
 		return payout;
 	}
 
-	private void setButtonImages() {
+	protected void setButtonImages() {
 		for (int y = 0; y < dimensions[1]; y++)
 			for (int x = 0; x < dimensions[0]; x++)
 				slotsButtons[y][x].setImage(currentSymbols[y][x].getGameImage());
@@ -261,5 +268,4 @@ public abstract class SlotsGame extends Game {
 		// TODO Auto-generated method stub
 
 	}
-
 }
