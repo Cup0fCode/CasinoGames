@@ -3,6 +3,9 @@ package water.of.cup.casinogames.games.slots;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -11,19 +14,26 @@ import water.of.cup.boardgames.game.Clock;
 import water.of.cup.boardgames.game.Game;
 import water.of.cup.boardgames.game.GamePlayer;
 import water.of.cup.boardgames.game.inventories.GameInventory;
+import water.of.cup.boardgames.game.maps.MapData;
+import water.of.cup.boardgames.game.maps.Screen;
 import water.of.cup.boardgames.game.storage.GameStorage;
 
 public abstract class SlotsGame extends Game {
 	private int[] dimensions; // {x , y}
 	protected Button[][] slotsButtons;
 	private ArrayList<SlotsSymbol> symbols;
-
 	private SlotsSymbol[][] currentSymbols;
-
 	private int initialBet;
+
+	private double winRatio;
+	private double payout = .9;
+
+	private Screen screen;
 
 	public SlotsGame(int rotation) {
 		super(rotation);
+
+		screen.setGameImage(gameImage);
 
 		dimensions = getDimensions();
 
@@ -33,14 +43,18 @@ public abstract class SlotsGame extends Game {
 		slotsButtons = getSlotsButtons();
 
 		for (Button[] row : slotsButtons)
-			for (Button b : row)
+			for (Button b : row) {
+				b.setScreen(screen);
 				buttons.add(b);
+			}
 
 		// verify slots size is consistent
 		assert dimensions[1] == slotsButtons.length && dimensions[0] == slotsButtons[0].length;
 		symbols = getSlotsSymbols();
 
 		currentSymbols = new SlotsSymbol[dimensions[1]][dimensions[0]];
+
+		winRatio = calculateWinRatio();
 
 		spin();
 		setButtonImages();
@@ -53,20 +67,33 @@ public abstract class SlotsGame extends Game {
 		givePayout();
 		setButtonImages();
 		mapManager.renderBoard();
-		
+
 		clearGamePlayers();
 		endGame(null);
 	}
 
 	private void spin() {
-		for (int y = 0; y < dimensions[1]; y++)
-			for (int x = 0; x < dimensions[0]; x++) {
-				int r = (int) (Math.random() * symbols.size());
-				currentSymbols[y][x] = symbols.get(r);
-			}
+		boolean win = Math.random() < winRatio;
+
+		do {
+			for (int y = 0; y < dimensions[1]; y++)
+				for (int x = 0; x < dimensions[0]; x++) {
+					int r = (int) (Math.random() * symbols.size());
+					currentSymbols[y][x] = symbols.get(r);
+				}
+		} while (calculatePayout() > 0 != win);
 	}
 
 	private void givePayout() {
+		double payout = calculatePayout() * initialBet;
+
+		// give payout
+		Player player = teamManager.getTurnPlayer().getPlayer();
+		player.sendMessage("You won $" + payout);
+		player.sendMessage("Average Win Payout: $" + getAverageWinPayout());
+	}
+
+	private double calculatePayout() {
 		// calculate payout
 		double payout = 0;
 
@@ -94,11 +121,7 @@ public abstract class SlotsGame extends Game {
 
 			payout += multiplier * tempPayout;
 		}
-		payout = initialBet * payout;
-
-		// give payout
-		Player player = teamManager.getTurnPlayer().getPlayer();
-		player.sendMessage("You won $" + payout);
+		return payout;
 	}
 
 	private void setButtonImages() {
@@ -115,9 +138,87 @@ public abstract class SlotsGame extends Game {
 
 	@Override
 	protected void setMapInformation(int rotation) {
-		this.mapStructure = new int[][] { { 1 } };
-		this.placedMapVal = 1;
+		this.mapStructure = new int[][] { { -1 } };
+		this.placedMapVal = -1;
 
+		screen = new Screen(this, "LIBERTYBELL_BOARD", 2, new int[] { 0, 0 }, new int[][] { { 1 } }, rotation);
+		screens.add(screen);
+	}
+
+	@Override
+	public boolean canPlaceBoard(Location loc, int rotation) {
+		int[] centerLoc = mapManager.getMapValsLocationOnRotatedBoard(placedMapVal);
+		int[] mapDimensions = mapManager.getRotatedDimensions();
+
+		// calculate map bounds
+		int t1X = -centerLoc[0];
+		int t2X = mapDimensions[0] + t1X;
+
+		int t1Y = 0;
+		int t2Y = 0; // for future changes
+
+		int t1Z = -centerLoc[1];
+		int t2Z = mapDimensions[1] + t1Z;
+
+		// calculate min and max bounds
+		int maxX = Math.max(t1X, t2X);
+		int minX = Math.min(t1X, t2X);
+
+		int maxY = Math.max(t1Y, t2Y);
+		int minY = Math.min(t1Y, t2Y);
+
+		int maxZ = Math.max(t1Z, t2Z);
+		int minZ = Math.min(t1Z, t2Z);
+
+		// check if blocks are empty
+		for (int x = minX; x <= maxX; x++) {
+			for (int y = minY; y <= maxY; y++) {
+				for (int z = minZ; z <= maxZ; z++) {
+					if (!loc.getWorld().getBlockAt(loc.getBlockX() + x, loc.getBlockY() + y, loc.getBlockZ() + z)
+							.isEmpty())
+						return false;
+
+					// check that place on is not empty
+					for (MapData mapData : mapManager.getMapDataAtLocationOnRotatedBoard(x - t1X, z - t1Z, y - t1Y)) {
+						if (mapData.getMapVal() <= 0)
+							continue;
+						Location frameLoc = new Location(loc.getWorld(), loc.getBlockX() + x, loc.getBlockY() + y,
+								loc.getBlockZ() + z);
+						Block placedOn = frameLoc.getBlock().getRelative(mapData.getBlockFace().getOppositeFace());
+						if (placedOn.getType() == Material.AIR)
+							return false;
+					}
+				}
+			}
+		}
+
+		// check that bottom blocks are not empty
+//		for (int x = minX; x <= maxX; x++)
+//			for (int z = minZ; z <= maxZ; z++) {
+//				if (loc.getWorld().getBlockAt(loc.getBlockX() + x, loc.getBlockY() - 1, loc.getBlockZ() + z).isEmpty())
+//					return false;
+//			}
+
+		return true;
+	}
+
+	private double getAverageWinPayout() {
+		double totalPayout = 0;
+		double totalLikelyhood = 0;
+		for (SlotsSymbol symbol : symbols) {
+			double[] stats = symbol.getAveragePayoutAndQuantity(symbols.size(), dimensions[0]);
+			totalPayout += stats[0] * stats[1];
+			totalLikelyhood += stats[1];
+		}
+		totalPayout *= dimensions[1];
+
+		if (totalLikelyhood == 0)
+			return 0;
+		return totalPayout / totalLikelyhood;
+	}
+
+	private double calculateWinRatio() {
+		return payout / getAverageWinPayout();
 	}
 
 	@Override

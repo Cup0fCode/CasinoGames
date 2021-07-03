@@ -1,7 +1,10 @@
 package water.of.cup.casinogames.games.slots;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+
+import water.of.cup.casinogames.games.MathUtils;
 
 public class SlotsSymbol {
 	private String imageName;
@@ -64,7 +67,7 @@ public class SlotsSymbol {
 				if (!symbols.containsKey(symbol))
 					continue specialPayouts;
 				// check that quantities are the same
-				if(symbolQuantity.getValue() != symbols.get(symbol))
+				if (symbolQuantity.getValue() != symbols.get(symbol))
 					continue specialPayouts;
 			}
 			if (specialPayout.getValue() > payout)
@@ -73,7 +76,7 @@ public class SlotsSymbol {
 
 		return payout;
 	}
-	
+
 	public double getPayout(HashMap<SlotsSymbol, Integer> symbols) {
 		int quantity = symbols.get(this);
 		double payout = getPayout(quantity);
@@ -82,4 +85,49 @@ public class SlotsSymbol {
 			return specialPayout;
 		return payout;
 	}
+
+	protected double[] getAveragePayoutAndQuantity(int uniqueSymbolQuantity, int amountOfSymbols) {
+		double totalPayout = 0;
+		int quantity = 0;
+		
+		for (Entry<Integer, Double> payout : payouts.entrySet()) {
+			ArrayList<Integer> uniqueSymbols = new ArrayList<Integer>();
+			uniqueSymbols.add(payout.getKey());
+			
+			int combinations = getTotalPayoutCombinations(uniqueSymbols, uniqueSymbolQuantity, amountOfSymbols);
+			quantity += combinations;
+			totalPayout += payout.getValue() * combinations;
+		}
+		
+		for (Entry<HashMap<SlotsSymbol, Integer>, Double> payout : specialPayouts.entrySet()) {
+			ArrayList<Integer> uniqueSymbols = new ArrayList<Integer>();
+			for (Entry<SlotsSymbol, Integer> entry : payout.getKey().entrySet()) {
+				uniqueSymbols.add(entry.getValue());
+			}
+			
+			int combinations = getTotalPayoutCombinations(uniqueSymbols, uniqueSymbolQuantity, amountOfSymbols);
+			quantity += combinations;
+			totalPayout += payout.getValue() * combinations;
+		}
+		if (quantity == 0)
+			return new double[] {0 ,0};
+		
+		return new double[] {totalPayout / quantity, quantity};
+	}
+	
+	private int getTotalPayoutCombinations(ArrayList<Integer> uniqueSymbols, int uniqueSymbolQuantity, int amountOfSymbols) {
+		int uniqueSymbolsTotal = 0;
+		for (Integer n : uniqueSymbols)
+			uniqueSymbolsTotal += n;
+		
+		long totalPayoutCombinations = MathUtils.factorial(amountOfSymbols);
+		
+		if (uniqueSymbolsTotal - amountOfSymbols > 0)
+			totalPayoutCombinations *= (amountOfSymbols - uniqueSymbols.size()) * (uniqueSymbolQuantity - uniqueSymbolsTotal);
+		
+		for (Integer n : uniqueSymbols)
+			totalPayoutCombinations /= MathUtils.factorial(n);
+		
+		return (int) totalPayoutCombinations;
+	} 
 }
