@@ -39,7 +39,7 @@ public abstract class SlotsGame extends Game {
 		// verify slots size is consistent
 		assert dimensions[1] == slotsButtons.length && dimensions[0] == slotsButtons[0].length;
 		symbols = getSlotsSymbols();
-		
+
 		currentSymbols = new SlotsSymbol[dimensions[1]][dimensions[0]];
 
 		spin();
@@ -53,6 +53,9 @@ public abstract class SlotsGame extends Game {
 		givePayout();
 		setButtonImages();
 		mapManager.renderBoard();
+		
+		clearGamePlayers();
+		endGame(null);
 	}
 
 	private void spin() {
@@ -66,17 +69,17 @@ public abstract class SlotsGame extends Game {
 	private void givePayout() {
 		// calculate payout
 		double payout = 0;
-		
+
 		for (SlotsSymbol[] line : currentSymbols) {
-			
+
 			int tempPayout = 0;
 			double multiplier = 1;
-			
+
 			HashMap<SlotsSymbol, Integer> symbolQuantity = new HashMap<SlotsSymbol, Integer>();
 
 			// calculate symbolQuantity:
 			for (SlotsSymbol symbol : line)
-				if (symbolQuantity.containsKey(symbol))
+				if (!symbolQuantity.containsKey(symbol))
 					symbolQuantity.put(symbol, 1);
 				else
 					symbolQuantity.put(symbol, symbolQuantity.get(symbol) + 1);
@@ -88,11 +91,10 @@ public abstract class SlotsGame extends Game {
 				if (symbol.getType() == SymbolType.MULTIPLIER)
 					multiplier = symbol.getPayout(symbolQuantity);
 			}
-			
+
 			payout += multiplier * tempPayout;
 		}
 		payout = initialBet * payout;
-		
 
 		// give payout
 		Player player = teamManager.getTurnPlayer().getPlayer();

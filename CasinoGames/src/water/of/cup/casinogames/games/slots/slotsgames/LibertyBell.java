@@ -54,7 +54,7 @@ public class LibertyBell extends SlotsGame {
 	protected Button[][] getSlotsButtons() {
 		Button[][] buttons = new Button[1][3];
 		for (int x = 0; x < 3; x ++) {
-			Button b = new Button(this, "LIBERTYBELL_BELL", new int[] {x , 40 }, 0, "slot");
+			Button b = new Button(this, "LIBERTYBELL_BELL", new int[] {40 + x * 16 , 56 }, 0, "slot");
 			buttons[0][x] = b;
 		}
 		return buttons;
