@@ -52,6 +52,7 @@ public abstract class SlotsGame extends Game {
 		spin();
 		givePayout();
 		setButtonImages();
+		mapManager.renderBoard();
 	}
 
 	private void spin() {
@@ -102,8 +103,6 @@ public abstract class SlotsGame extends Game {
 		for (int y = 0; y < dimensions[1]; y++)
 			for (int x = 0; x < dimensions[0]; x++)
 				slotsButtons[y][x].setImage(currentSymbols[y][x].getGameImage());
-
-		mapManager.renderBoard();
 	}
 
 	protected abstract int[] getDimensions();
