@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 
 import water.of.cup.boardgames.BoardGames;
 import water.of.cup.boardgames.game.Button;
@@ -20,6 +21,8 @@ import water.of.cup.boardgames.game.maps.Screen;
 import water.of.cup.boardgames.game.storage.GameStorage;
 
 public abstract class SlotsGame extends Game {
+	private BoardGames instance = BoardGames.getInstance();
+	
 	private int[] dimensions; // {x , y}
 	protected Button[][] slotsButtons;
 	private ArrayList<SlotsSymbol> symbols;
@@ -63,7 +66,15 @@ public abstract class SlotsGame extends Game {
 
 	@Override
 	protected void startGame() {
-		initialBet = 5; // TODO: get initial bet
+		initialBet = (int) this.gameInventory.getGameData("betAmount"); // TODO: get initial bet
+		if (instance.getEconomy().getBalance(teamManager.getTurnPlayer().getPlayer()) < initialBet) {
+			teamManager.getTurnPlayer().getPlayer().sendMessage("You do not have enough funds");
+			clearGamePlayers();
+			endGame(null);
+			return;
+		}
+		
+		instance.getEconomy().withdrawPlayer(teamManager.getTurnPlayer().getPlayer(), initialBet);
 		SlotsSpinner spinner = new SlotsSpinner(this, mapManager, 10);
 		spinner.runTaskTimer(BoardGames.getInstance(), 2, 2);
 	}
@@ -96,8 +107,8 @@ public abstract class SlotsGame extends Game {
 
 		// give payout
 		Player player = teamManager.getTurnPlayer().getPlayer();
+		instance.getEconomy().depositPlayer(player, payout);
 		player.sendMessage("You won $" + payout);
-		player.sendMessage("Average Win Payout: $" + getAverageWinPayout());
 	}
 
 	private double calculatePayout() {

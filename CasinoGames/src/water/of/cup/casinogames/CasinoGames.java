@@ -16,8 +16,8 @@ public class CasinoGames extends BoardGamesExtension {
 	}
 
 	@Override
-	public String getResourcePath() {
+	public String getExtensionName() {
 		// TODO Auto-generated method stub
-		return "water/of/cup/casinogames/images";
+		return "CasinoGames";
 	}
 }
