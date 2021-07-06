@@ -7,4 +7,9 @@ public class MathUtils {
 	    }
 	    return n * factorial(n - 1);
 	}
+
+	public static long combination(int x, int d) {
+		if(x == d) return 1;
+		return factorial(x) / (factorial(d) * factorial(x - d));
+	}
 }
