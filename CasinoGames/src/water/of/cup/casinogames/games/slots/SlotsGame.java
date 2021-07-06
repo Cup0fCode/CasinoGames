@@ -2,6 +2,7 @@ package water.of.cup.casinogames.games.slots;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.function.Predicate;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,7 +23,7 @@ import water.of.cup.boardgames.game.storage.GameStorage;
 
 public abstract class SlotsGame extends Game {
 	private BoardGames instance = BoardGames.getInstance();
-	
+
 	private int[] dimensions; // {x , y}
 	protected Button[][] slotsButtons;
 	private ArrayList<SlotsSymbol> symbols;
@@ -73,12 +74,12 @@ public abstract class SlotsGame extends Game {
 			endGame(null);
 			return;
 		}
-		
+
 		instance.getEconomy().withdrawPlayer(teamManager.getTurnPlayer().getPlayer(), initialBet);
 		SlotsSpinner spinner = new SlotsSpinner(this, mapManager, 10);
 		spinner.runTaskTimer(BoardGames.getInstance(), 2, 2);
 	}
-	
+
 	protected void finishSpin() {
 		// TODO Auto-generated method stub
 		spin();
@@ -109,6 +110,13 @@ public abstract class SlotsGame extends Game {
 		Player player = teamManager.getTurnPlayer().getPlayer();
 		instance.getEconomy().depositPlayer(player, payout);
 		player.sendMessage("You won $" + payout);
+
+		// TODO: boolean check send message if player won
+		
+		// send nearby players win message
+		if (payout > 0)
+			player.getWorld().getNearbyEntities(player.getLocation(), 10, 10, 10, e -> e instanceof Player && e != player).stream()
+					.forEach(e -> e.sendMessage(player.getDisplayName() + " won $" + payout + " playing " + this.getGameName()));
 	}
 
 	private double calculatePayout() {
