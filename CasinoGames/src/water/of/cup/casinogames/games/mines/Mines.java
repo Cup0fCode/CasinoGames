@@ -1,5 +1,6 @@
 package water.of.cup.casinogames.games.mines;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -8,6 +9,7 @@ import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.storage.GameStorage;
 import water.of.cup.casinogames.games.MathUtils;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 public class Mines extends Game {
@@ -15,6 +17,8 @@ public class Mines extends Game {
     private int[][] selectedTiles;
     private int[][] bombLocations;
     private Button[][] tileButtons;
+    private int bombCount;
+    private int betAmount;
 
     public Mines(int rotation) {
         super(rotation);
@@ -30,26 +34,49 @@ public class Mines extends Game {
     protected void startGame() {
         super.startGame();
         buttons.clear();
+
+        this.bombCount = (int) getGameData("bombAmount");
+        if(this.bombCount > 24)
+            this.bombCount = 24;
+
+        this.betAmount = (int) getGameData("betAmount");
+
         setInGame();
         createBoard();
         mapManager.renderBoard();
     }
 
-    private void createBoard() {
+    @Override
+    public void renderInitial() {
+        super.renderInitial();
+        createBoard();
+        mapManager.renderBoard();
+    }
+
+    private void createBoard()   {
         this.selectedTiles = new int[5][5];
         this.bombLocations = new int[5][5];
         this.tileButtons = new Button[5][5];
 
         for(int y = 0; y < this.tileButtons.length; y++) {
             for(int x = 0; x < this.tileButtons[y].length; x++) {
-                Button tileButton = new Button(this, "MINE_UNSELECTED", new int[] { x * 26, y * 26 }, 0, "UNSELECTED");
+                Button tileButton = new Button(this, "MINE_UNSELECTED", new int[] { x * 25 + 2, y * 25 + 2}, 0, "UNSELECTED");
                 tileButton.setClickable(true);
                 this.tileButtons[y][x] = tileButton;
                 buttons.add(tileButton);
             }
         }
 
-        // TODO: place bombs
+        for(int i = 0; i < this.bombCount; i++) {
+            int randX = (int) (Math.random() * this.bombLocations.length);
+            int randY = (int) (Math.random() * this.bombLocations.length);
+            if(this.bombLocations[randY][randX] != 0) {
+                i--;
+                continue;
+            }
+
+            this.bombLocations[randY][randX] = 1;
+        }
     }
 
     @Override
@@ -74,7 +101,7 @@ public class Mines extends Game {
 
     @Override
     protected GameInventory getGameInventory() {
-        return null;
+        return new MinesInventory(this);
     }
 
     @Override
@@ -95,48 +122,64 @@ public class Mines extends Game {
     @Override
     public void click(Player player, double[] loc, ItemStack map) {
         GamePlayer gamePlayer = getGamePlayer(player);
-//        TODO: Add back once game inv is added
-//        if(!teamManager.getTurnPlayer().equals(gamePlayer)) return;
+        if(!teamManager.getTurnPlayer().equals(gamePlayer)) return;
 
         int[] clickLoc = mapManager.getClickLocation(loc, map);
 
         Button b = getClickedButton(gamePlayer, clickLoc);
         if(b == null) return;
 
-        boolean didSelect = selectMine(b);
+        int[] buttonLoc = getButtonLocation(b);
+        if(buttonLoc == null) return;
+
+        if(!b.getName().equals("UNSELECTED")) return;
+
+        boolean didSelect = selectMine(b, buttonLoc);
+        double multiplier = getWinMultiplier(bombCount, getTilesOpened());
         if(didSelect) {
-            player.sendMessage("You selected a tile!");
+            player.sendMessage("Current multiplier: " + multiplier + " Cash out at: " + Math.round((this.betAmount * multiplier) * 100.0) / 100.0);
+        } else {
+            player.sendMessage("You lost at " + multiplier + "x!");
+            endGame();
         }
 
         mapManager.renderBoard();
     }
 
-    private boolean selectMine(Button b) {
-        int[] buttonLoc = getButtonLocation(b);
-        if(buttonLoc == null) return false;
-
-        if(b.getName().equals("UNSELECTED")) {
-            // TODO: Check if bomb is located
-            this.selectedTiles[buttonLoc[1]][buttonLoc[0]] = 1;
-
-            b.getImage().setImage("MINE_SELECTED");
-            b.setName("SELECTED");
-            return true;
-        }
-
-        return false;
+    private void endGame() {
+        clearGamePlayers();
+        super.endGame(null);
     }
 
-    private long getWinChance(int bombCount, int tilesOpened) {
+    private boolean selectMine(Button b, int[] buttonLoc) {
+        if(this.bombLocations[buttonLoc[1]][buttonLoc[0]] == 1) {
+            // Show all the bombs
+            for (int y = 0; y < bombLocations.length; y++) {
+                for(int x = 0; x < bombLocations[y].length; x++) {
+                    if(bombLocations[y][x] == 1) {
+                        this.tileButtons[y][x].getImage().setImage("MINE_BOMB");
+                        this.tileButtons[y][x].setName("BOMB");
+                    }
+                }
+            }
+            return false;
+        }
+
+        this.selectedTiles[buttonLoc[1]][buttonLoc[0]] = 1;
+
+        b.getImage().setImage("MINE_SELECTED");
+        b.setName("SELECTED");
+        return true;
+    }
+
+    private double getWinMultiplier(int bombCount, int tilesOpened) {
         int tileTotal = 25;
         int availTiles = 25 - bombCount;
 
-        long first = MathUtils.combination(tileTotal, tilesOpened);
-        long second = MathUtils.combination(availTiles, tilesOpened);
-
-//        double result = 0.99 * (first/second);
-        // TODO: Finish this
-        return 0;
+        long first = MathUtils.binomial(tileTotal, tilesOpened);
+        long second = MathUtils.binomial(availTiles, tilesOpened);
+        double result = 0.99 * ((double) first / second);
+        return Math.round(result * 100) / 100.0;
     }
 
     private int[] getButtonLocation(Button b) {
@@ -147,6 +190,18 @@ public class Mines extends Game {
             }
         }
         return null;
+    }
+
+    private int getTilesOpened() {
+        int numOpened = 0;
+        for (int[] selectedTile : this.selectedTiles) {
+            for (int i : selectedTile) {
+                if (i == 1) {
+                    numOpened++;
+                }
+            }
+        }
+        return numOpened;
     }
 
     @Override
