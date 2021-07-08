@@ -7,4 +7,13 @@ public class MathUtils {
 	    }
 	    return n * factorial(n - 1);
 	}
+
+	public static long binomial(int N, int K) {
+		long ret = 1;
+		for(int k = 0; k < K; k++) {
+			ret = ret * (N-k);
+			ret = ret / (k + 1);
+		}
+		return ret;
+	}
 }

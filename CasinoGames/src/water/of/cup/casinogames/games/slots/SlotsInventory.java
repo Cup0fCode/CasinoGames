@@ -25,7 +25,7 @@ public class SlotsInventory extends GameInventory {
 	@Override
 	protected ArrayList<GameOption> getOptions() {
 		ArrayList<GameOption> options = new ArrayList<GameOption>();
-		GameOption bet = new GameOption("betAmount", Material.GOLD_NUGGET, GameOptionType.COUNT, null, "0");
+		GameOption bet = new GameOption("betAmount", Material.GOLD_NUGGET, GameOptionType.COUNT, null, "0", true);
 		options.add(bet);
 		return options;
 	}
