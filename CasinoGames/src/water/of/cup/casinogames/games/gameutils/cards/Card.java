@@ -24,4 +24,8 @@ public class Card {
 		// num * 10 + suit
 		return getValue() * 10 + suit.getPoints();
 	}
+
+	public CardSuit getSuit() {
+		return suit;
+	}
 }

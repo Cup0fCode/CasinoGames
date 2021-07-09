@@ -113,8 +113,38 @@ public class Hand {
 		}
 		
 		// Flush: 5
+		HashMap<CardSuit, Hand> suitCards = new HashMap<CardSuit, Hand>();
+		for (Card card : extraCards) {
+			CardSuit suit = card.getSuit();
+			if (suitCards.containsKey(suit)) {
+				suitCards.put(suit, new Hand());
+			}
+			suitCards.get(suit).addCard(card);
+		}
+		int maxSuitPoints = 0;
+		for (Hand suitHand : suitCards.values()) {
+			if (suitHand.getAmountOfCards() >= 5) {
+				int tempPoints = 500 + suitHand.getHighCard().getPoints();
+				if (tempPoints > maxSuitPoints)
+					maxSuitPoints = tempPoints;
+			}
+		}
+		if (maxSuitPoints >= 500)
+			points = maxSuitPoints;
+		
+		
 		
 		// Full House: 6
+		if (threes.size() >= 1 && pairs.size() >= 1 ) {
+			int highPoints = 0;
+			for (Hand three : threes)
+				if (three.getHighCard().getPoints() > highPoints)
+					highPoints = three.getHighCard().getPoints();
+			for (Hand pair : pairs)
+				if (pair.getHighCard().getPoints() > highPoints)
+					highPoints = pair.getHighCard().getPoints();
+			points = 600 + highPoints;
+		}
 		
 		// Four of a kind: 7
 		if (fours.size() >= 1) {
@@ -126,10 +156,74 @@ public class Hand {
 		}
 		
 		// Straight Flush: 8
+		for (Hand tHand : suitCards.values()) {
+			if (tHand.getAmountOfCards() < 5)
+				continue;
+			
+			HashMap<Integer, Hand> tmultiples = new HashMap<Integer, Hand>();
+			for (Card card : tHand.getCards()) {
+				int val = card.getValue();
+				if (!tmultiples.containsKey(val)) {
+					tmultiples.put(val, new Hand());
+				}
+				tmultiples.get(val).addCard(card);
+			}
+			
+			ArrayList<Hand> tstraits = new ArrayList<Hand>();
+			int tlastVal = -2;
+			straits.add(new Hand());
+			for (Entry<Integer, Hand> entry : tmultiples.entrySet()) {
+				Hand strait = tstraits.get(tstraits.size() - 1);
+				if (tlastVal == entry.getKey() - 1) {
+					strait.addCard(entry.getValue().getHighCard());
+					
+				} else {
+					tstraits.clear();
+				}
+				tlastVal = entry.getKey();
+				
+				if (strait.getAmountOfCards() == 5) {
+					tstraits.add(new Hand());
+				}
+			}
+			if (tstraits.get(tstraits.size() - 1).getAmountOfCards() != 5)
+				tstraits.remove(tstraits.size() - 1);
+			boolean thasStrait = tstraits.size() > 0;
+			if (thasStrait) {
+				Hand strait = tstraits.get(tstraits.size() - 1);
+				int tpoints = 800 + strait.getHighCard().getPoints();
+				if (tpoints > points)
+					points = tpoints;
+			}
+		}
 		
 		// Royal Flush: 9
+		suitLoop: for (Hand tHand : suitCards.values()) {
+			if (tHand.getAmountOfCards() < 5)
+				continue;
+			for (int n = 10; n < 13; n++) {
+				if (!tHand.containsCardNum(n))
+					continue  suitLoop;
+			}
+			int tpoints = 900 + tHand.getHighCard().getPoints();
+			if (tpoints > points)
+				points = tpoints;
+		}
 
 		return points;
+	}
+
+	private boolean containsCardNum(int n) {
+		for (Card card : cards)
+			if (card.getValue() == n)
+				return true;
+		return false;
+	}
+
+	@SuppressWarnings("unchecked")
+	private ArrayList<Card> getCards() {
+		// TODO Auto-generated method stub
+		return (ArrayList<Card>) cards.clone();
 	}
 
 	public String getHandName() {
