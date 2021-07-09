@@ -1,4 +1,4 @@
-package water.of.cup.casinogames.games;
+package water.of.cup.casinogames.games.gameutils;
 
 public class MathUtils {
 	public static long factorial(int n) {

@@ -9,7 +9,7 @@ import water.of.cup.boardgames.config.ConfigUtil;
 import water.of.cup.boardgames.game.*;
 import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.storage.GameStorage;
-import water.of.cup.casinogames.games.MathUtils;
+import water.of.cup.casinogames.games.gameutils.MathUtils;
 
 import java.math.BigInteger;
 import java.util.ArrayList;

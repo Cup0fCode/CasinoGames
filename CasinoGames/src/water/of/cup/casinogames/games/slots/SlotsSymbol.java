@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import water.of.cup.casinogames.games.MathUtils;
+import water.of.cup.casinogames.games.gameutils.MathUtils;
 
 public class SlotsSymbol {
 	private String imageName;
