@@ -1,11 +1,13 @@
 package water.of.cup.casinogames.games.mines;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import water.of.cup.boardgames.game.Game;
 import water.of.cup.boardgames.game.GamePlayer;
 import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.inventories.GameOption;
 import water.of.cup.boardgames.game.inventories.GameOptionType;
+import water.of.cup.casinogames.config.ConfigUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,11 +21,11 @@ public class MinesInventory extends GameInventory {
 
     @Override
     protected ArrayList<GameOption> getOptions() {
-        ArrayList<GameOption> options = new ArrayList<GameOption>();//  economyRequired
-        GameOption bet = new GameOption("betAmount", Material.GOLD_NUGGET, GameOptionType.COUNT, null, "0", true);
+        ArrayList<GameOption> options = new ArrayList<GameOption>();
+        GameOption bet = new GameOption("betAmount", Material.GOLD_NUGGET, GameOptionType.COUNT, ConfigUtil.GUI_BET_AMOUNT_LABEL.toString(), "1", true, 1, Integer.MAX_VALUE);
         options.add(bet);
-        // TODO: Add translation
-        GameOption bombAmount = new GameOption("bombAmount", Material.GOLD_NUGGET, GameOptionType.COUNT, "Bomb Amount: ", "1", false, 1, 24);
+
+        GameOption bombAmount = new GameOption("bombAmount", Material.GOLD_NUGGET, GameOptionType.COUNT, ConfigUtil.GUI_BOMB_AMOUNT_LABEL.toString(), "1", false, 1, 24);
         options.add(bombAmount);
         return options;
     }
@@ -66,5 +68,15 @@ public class MinesInventory extends GameInventory {
     @Override
     protected void onGameCreate(HashMap<String, Object> hashMap, ArrayList<GamePlayer> arrayList) {
         game.startGame();
+    }
+
+    @Override
+    public boolean hasCustomInGameInventory() {
+        return true;
+    }
+
+    @Override
+    public void openCustomInGameInventory(Player player) {
+        new MinesInGameInventory(this).build(player, game::cashOut);
     }
 }

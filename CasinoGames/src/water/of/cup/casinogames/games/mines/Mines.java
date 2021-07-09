@@ -4,6 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import water.of.cup.boardgames.BoardGames;
+import water.of.cup.boardgames.config.ConfigUtil;
 import water.of.cup.boardgames.game.*;
 import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.storage.GameStorage;
@@ -14,6 +16,7 @@ import java.util.ArrayList;
 
 public class Mines extends Game {
 
+    private final BoardGames instance = BoardGames.getInstance();
     private int[][] selectedTiles;
     private int[][] bombLocations;
     private Button[][] tileButtons;
@@ -32,14 +35,25 @@ public class Mines extends Game {
 
     @Override
     protected void startGame() {
+        if(hasGameData("betAmount")) {
+            this.betAmount = (int) getGameData("betAmount");
+            if (instance.getEconomy().getBalance(teamManager.getTurnPlayer().getPlayer()) < this.betAmount) {
+                teamManager.getTurnPlayer().getPlayer().sendMessage(ConfigUtil.CHAT_GUI_GAME_NO_MONEY_CREATE.toString());
+                endGame();
+                return;
+            }
+
+            instance.getEconomy().withdrawPlayer(teamManager.getTurnPlayer().getPlayer(), this.betAmount);
+        } else {
+            this.betAmount = 0;
+        }
+
         super.startGame();
         buttons.clear();
 
         this.bombCount = (int) getGameData("bombAmount");
         if(this.bombCount > 24)
             this.bombCount = 24;
-
-        this.betAmount = (int) getGameData("betAmount");
 
         setInGame();
         createBoard();
@@ -137,7 +151,7 @@ public class Mines extends Game {
         boolean didSelect = selectMine(b, buttonLoc);
         double multiplier = getWinMultiplier(bombCount, getTilesOpened());
         if(didSelect) {
-            player.sendMessage("Current multiplier: " + multiplier + " Cash out at: " + Math.round((this.betAmount * multiplier) * 100.0) / 100.0);
+            player.sendMessage("Current multiplier: " + multiplier + "x. Cash out at: " + Math.round((this.betAmount * multiplier) * 100.0) / 100.0);
         } else {
             player.sendMessage("You lost at " + multiplier + "x!");
             endGame();
@@ -207,6 +221,14 @@ public class Mines extends Game {
     @Override
     protected void gamePlayerOutOfTime(GamePlayer gamePlayer) {
 
+    }
+
+    protected void cashOut() {
+        double multiplier = getTilesOpened() == 0 ? 1.0 : getWinMultiplier(bombCount, getTilesOpened());
+        double payout = Math.round((this.betAmount * multiplier) * 100.0) / 100.0;
+        instance.getEconomy().depositPlayer(teamManager.getTurnPlayer().getPlayer(), payout);
+        teamManager.getTurnPlayer().getPlayer().sendMessage("You cashed out at " + multiplier + "x! Payout: " + payout);
+        endGame();
     }
 
     @Override

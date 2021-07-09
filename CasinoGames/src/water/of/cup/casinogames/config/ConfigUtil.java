@@ -5,7 +5,9 @@ import water.of.cup.boardgames.BoardGames;
 import water.of.cup.boardgames.config.ConfigInterface;
 
 public enum ConfigUtil implements ConfigInterface {
-    GUI_TEAM_LABEL("settings.messages.gui.teamlabel", "&2Team: ");
+    GUI_BOMB_AMOUNT_LABEL("settings.messages.gui.bombamountlabel", "&2Bomb Amount: "),
+    GUI_BET_AMOUNT_LABEL("settings.messages.gui.betamountlabel", "&2Bet Amount: "),
+    GUI_MINES_CASH_OUT("settings.messages.gui.minescashout", "&aCash-Out");
 
     private final String path;
     private final String defaultValue;
