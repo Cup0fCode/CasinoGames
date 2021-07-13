@@ -248,16 +248,17 @@ public class Hand {
 		return high;
 
 	}
-
-//	private Card getHighCard(ArrayList<Card> tcards) {
-//		Card high = tcards.get(0);
-//		int points = 0;
-//		for (Card card : tcards) {
-//			if (card.getPoints() > points) {
-//				points = card.getPoints();
-//				high = card;
-//			}
-//		}
-//		return high;
-//	}
+	
+	public static Hand getBestHand(ArrayList<Hand> hands, ArrayList<Card> extraCards) {
+		Hand bestHand = hands.get(0);
+		int bestHandPoints = 0;
+		for (Hand hand : hands) {
+			int points = hand.getHandPoints(extraCards);
+			if (points > bestHandPoints) {
+				bestHandPoints = points;
+				bestHand = hand;
+			}
+		}
+		return bestHand;
+	}
 }
