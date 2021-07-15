@@ -120,14 +120,14 @@ public class SlotsSymbol {
 		for (Integer n : uniqueSymbols)
 			uniqueSymbolsTotal += n;
 		
-		long totalPayoutCombinations = MathUtils.factorial(amountOfSymbols);
+		long totalPayoutCombinations = MathUtils.factorial(amountOfSymbols) / MathUtils.factorial(amountOfSymbols - uniqueSymbolsTotal);
 		
-		if (uniqueSymbolsTotal - amountOfSymbols > 0)
-			totalPayoutCombinations *= (amountOfSymbols - uniqueSymbols.size()) * (uniqueSymbolQuantity - uniqueSymbolsTotal);
+		if (amountOfSymbols - uniqueSymbolsTotal > 0)
+			totalPayoutCombinations *= Math.pow(uniqueSymbolQuantity - uniqueSymbols.size(), amountOfSymbols - uniqueSymbolsTotal);
 		
 		for (Integer n : uniqueSymbols)
 			totalPayoutCombinations /= MathUtils.factorial(n);
-		
+		//System.out.println(imageName + ": " + totalPayoutCombinations);
 		return (int) totalPayoutCombinations;
 	} 
 }
