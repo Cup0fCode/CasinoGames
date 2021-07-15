@@ -125,7 +125,7 @@ public abstract class SlotsGame extends Game {
 
 		for (SlotsSymbol[] line : currentSymbols) {
 
-			int tempPayout = 0;
+			double tempPayout = 0;
 			double multiplier = 1;
 
 			HashMap<SlotsSymbol, Integer> symbolQuantity = new HashMap<SlotsSymbol, Integer>();
