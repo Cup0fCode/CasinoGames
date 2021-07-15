@@ -110,8 +110,8 @@ public abstract class SlotsGame extends Game {
 		Player player = teamManager.getTurnPlayer().getPlayer();
 		instance.getEconomy().depositPlayer(player, payout);
 		player.sendMessage("You won $" + payout);
-		player.sendMessage("Win Ratio: " + winRatio);
-		player.sendMessage("Average Win Payout: " + getAverageWinPayout());
+//		player.sendMessage("Win Ratio: " + winRatio);
+//		player.sendMessage("Average Win Payout: " + getAverageWinPayout());
 
 		// TODO: boolean check send message if player won
 		
