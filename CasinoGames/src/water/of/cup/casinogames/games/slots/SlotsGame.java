@@ -110,8 +110,8 @@ public abstract class SlotsGame extends Game {
 		Player player = teamManager.getTurnPlayer().getPlayer();
 		instance.getEconomy().depositPlayer(player, payout);
 		player.sendMessage("You won $" + payout);
-//		player.sendMessage("Win Ratio: " + winRatio);
-//		player.sendMessage("Average Win Payout: " + getAverageWinPayout());
+		player.sendMessage("Win Ratio: " + winRatio);
+		player.sendMessage("Average Win Payout: " + getAverageWinPayout());
 
 		// TODO: boolean check send message if player won
 		
@@ -235,7 +235,7 @@ public abstract class SlotsGame extends Game {
 		double totalLikelyhood = 0;
 		for (SlotsSymbol symbol : symbols) {
 			double[] stats = symbol.getAveragePayoutAndQuantity(symbols.size(), dimensions[0]);
-			totalPayout += stats[0];
+			totalPayout += stats[0] * stats[1];
 			totalLikelyhood += stats[1];
 		}
 		totalPayout *= dimensions[1];
