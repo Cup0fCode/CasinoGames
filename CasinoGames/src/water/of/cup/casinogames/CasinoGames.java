@@ -7,6 +7,7 @@ import water.of.cup.boardgames.extension.BoardGamesExtension;
 import water.of.cup.boardgames.game.Game;
 import water.of.cup.casinogames.config.ConfigUtil;
 import water.of.cup.casinogames.games.mines.Mines;
+import water.of.cup.casinogames.games.poker.Poker;
 import water.of.cup.casinogames.games.slots.slotsgames.LibertyBell;
 
 public class CasinoGames extends BoardGamesExtension {
@@ -16,6 +17,7 @@ public class CasinoGames extends BoardGamesExtension {
 		ArrayList<Class<? extends Game>> games = new ArrayList<Class<? extends Game>>();
 		games.add(LibertyBell.class);
 		games.add(Mines.class);
+		games.add(Poker.class);
 		return games;
 	}
 
