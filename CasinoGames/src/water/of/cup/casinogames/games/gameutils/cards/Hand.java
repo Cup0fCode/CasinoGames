@@ -263,11 +263,12 @@ public class Hand {
 		return bestHand;
 	}
 
-	public GameImage getGameImage() {
+	public GameImage getGameImage(boolean moveCardsDown) {
 		GameImage image = new GameImage(ImageManager.getImage("PLAYINGCARDS_HAND"), 0);
 		int x = 0;
+		int y = moveCardsDown ? 53 : 103;
 		for (Card card : cards) {
-			image.addGameImage(card.getGameImage(), new int[] { 24 + 16 * x, 53 });
+			image.addGameImage(card.getGameImage(), new int[] { 24 + 16 * x, y });
 			x++;
 		}
 		return image;
