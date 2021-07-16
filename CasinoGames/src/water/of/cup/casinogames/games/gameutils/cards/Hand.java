@@ -218,10 +218,8 @@ public class Hand {
 		return false;
 	}
 
-	@SuppressWarnings("unchecked")
-	private ArrayList<Card> getCards() {
-		// TODO Auto-generated method stub
-		return (ArrayList<Card>) cards.clone();
+	public ArrayList<Card> getCards() {
+		return new ArrayList<>(this.cards);
 	}
 
 	public String getHandName() {

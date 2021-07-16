@@ -24,12 +24,12 @@ public class PokerInventory extends GameInventory {
 
     @Override
     protected int getMaxQueue() {
-        return 0;
+        return 1;
     }
 
     @Override
     protected int getMaxGame() {
-        return 1;
+        return 7;
     }
 
     @Override

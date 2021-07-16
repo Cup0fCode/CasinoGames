@@ -15,8 +15,8 @@ public enum PokerButton {
         this.yDisplacement = yDisplacement;
     }
 
-    public String getImageName() {
-        return "POKER_" + toString();
+    public String getImageName(boolean dark) {
+        return dark ? "POKER_" + toString() + "_DARK" : "POKER_" + toString();
     }
 
     public int getxDisplacement() {
