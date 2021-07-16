@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import water.of.cup.boardgames.game.GameImage;
+import water.of.cup.boardgames.image_handling.ImageManager;
+
 public class Hand {
 	ArrayList<Card> cards;
 
@@ -47,7 +50,7 @@ public class Hand {
 			}
 			multiples.get(val).addCard(card);
 		}
-		
+
 		ArrayList<Hand> pairs = new ArrayList<Hand>();
 		ArrayList<Hand> threes = new ArrayList<Hand>();
 		ArrayList<Hand> fours = new ArrayList<Hand>();
@@ -64,12 +67,12 @@ public class Hand {
 				continue;
 			}
 		}
-		
+
 		// Pair: 1
 		if (pairs.size() == 1) {
 			points = 1000 + pairs.get(0).getHighCard().getPoints();
 		}
-		
+
 		// Two Pair: 2
 		if (pairs.size() == 2) {
 			int highPoints = 0;
@@ -78,7 +81,7 @@ public class Hand {
 					highPoints = pair.getHighCard().getPoints();
 			points = 2000 + highPoints;
 		}
-		
+
 		// Three of a kind: 3
 		if (threes.size() >= 1) {
 			int highPoints = 0;
@@ -87,7 +90,7 @@ public class Hand {
 					highPoints = three.getHighCard().getPoints();
 			points = 3000 + highPoints;
 		}
-		
+
 		// Straight: 4
 		ArrayList<Hand> straits = new ArrayList<Hand>();
 		int lastVal = -2;
@@ -99,7 +102,7 @@ public class Hand {
 			}
 			strait.addCard(entry.getValue().getHighCard());
 			lastVal = entry.getKey();
-			
+
 			if (strait.getAmountOfCards() == 5) {
 				straits.add(new Hand());
 			}
@@ -111,7 +114,7 @@ public class Hand {
 			Hand strait = straits.get(straits.size() - 1);
 			points = 4000 + strait.getHighCard().getPoints();
 		}
-		
+
 		// Flush: 5
 		HashMap<CardSuit, Hand> suitCards = new HashMap<CardSuit, Hand>();
 		for (Card card : handCards) {
@@ -131,11 +134,9 @@ public class Hand {
 		}
 		if (maxSuitPoints >= 5000)
 			points = maxSuitPoints;
-		
-		
-		
+
 		// Full House: 6
-		if (threes.size() >= 1 && pairs.size() >= 1 ) {
+		if (threes.size() >= 1 && pairs.size() >= 1) {
 			int highPoints = 0;
 			for (Hand three : threes)
 				if (three.getHighCard().getPoints() > highPoints)
@@ -145,7 +146,7 @@ public class Hand {
 					highPoints = pair.getHighCard().getPoints();
 			points = 6000 + highPoints;
 		}
-		
+
 		// Four of a kind: 7
 		if (fours.size() >= 1) {
 			int highPoints = 0;
@@ -154,12 +155,12 @@ public class Hand {
 					highPoints = four.getHighCard().getPoints();
 			points = 7000 + highPoints;
 		}
-		
+
 		// Straight Flush: 8
 		for (Hand tHand : suitCards.values()) {
 			if (tHand.getAmountOfCards() < 5)
 				continue;
-			
+
 			HashMap<Integer, Hand> tmultiples = new HashMap<Integer, Hand>();
 			for (Card card : tHand.getCards()) {
 				int val = card.getValue();
@@ -168,7 +169,7 @@ public class Hand {
 				}
 				tmultiples.get(val).addCard(card);
 			}
-			
+
 			ArrayList<Hand> tstraits = new ArrayList<Hand>();
 			int tlastVal = -2;
 			tstraits.add(new Hand());
@@ -179,7 +180,7 @@ public class Hand {
 				}
 				strait.addCard(entry.getValue().getHighCard());
 				tlastVal = entry.getKey();
-				
+
 				if (strait.getAmountOfCards() == 5) {
 					tstraits.add(new Hand());
 				}
@@ -194,14 +195,14 @@ public class Hand {
 					points = tpoints;
 			}
 		}
-		
+
 		// Royal Flush: 9
 		suitLoop: for (Hand tHand : suitCards.values()) {
 			if (tHand.getAmountOfCards() < 5)
 				continue;
 			for (int n = 10; n < 13; n++) {
 				if (!tHand.containsCardNum(n))
-					continue  suitLoop;
+					continue suitLoop;
 			}
 			int tpoints = 9000 + tHand.getHighCard().getPoints();
 			if (tpoints > points)
@@ -227,11 +228,11 @@ public class Hand {
 	public String getHandName() {
 		return "";
 	}
-	
+
 	public int getAmountOfCards() {
 		return cards.size();
 	}
-	
+
 	public void clear() {
 		cards = new ArrayList<Card>();
 	}
@@ -248,7 +249,7 @@ public class Hand {
 		return high;
 
 	}
-	
+
 	public static Hand getBestHand(ArrayList<Hand> hands, ArrayList<Card> extraCards) {
 		Hand bestHand = hands.get(0);
 		int bestHandPoints = 0;
@@ -260,5 +261,15 @@ public class Hand {
 			}
 		}
 		return bestHand;
+	}
+
+	public GameImage getGameImage() {
+		GameImage image = new GameImage(ImageManager.getImage("PLAYINGCARDS_HAND"), 0);
+		int x = 0;
+		for (Card card : cards) {
+			image.addGameImage(card.getGameImage(), new int[] { 24 + 16 * x, 53 });
+			x++;
+		}
+		return image;
 	}
 }
