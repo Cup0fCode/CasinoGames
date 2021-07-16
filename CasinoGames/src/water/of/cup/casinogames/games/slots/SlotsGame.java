@@ -110,6 +110,8 @@ public abstract class SlotsGame extends Game {
 		Player player = teamManager.getTurnPlayer().getPlayer();
 		instance.getEconomy().depositPlayer(player, payout);
 		player.sendMessage("You won $" + payout);
+//		player.sendMessage("Win Ratio: " + winRatio);
+//		player.sendMessage("Average Win Payout: " + getAverageWinPayout());
 
 		// TODO: boolean check send message if player won
 		
@@ -125,7 +127,7 @@ public abstract class SlotsGame extends Game {
 
 		for (SlotsSymbol[] line : currentSymbols) {
 
-			int tempPayout = 0;
+			double tempPayout = 0;
 			double multiplier = 1;
 
 			HashMap<SlotsSymbol, Integer> symbolQuantity = new HashMap<SlotsSymbol, Integer>();
