@@ -219,10 +219,8 @@ public class Hand {
 		return false;
 	}
 
-	@SuppressWarnings("unchecked")
-	private ArrayList<Card> getCards() {
-		// TODO Auto-generated method stub
-		return (ArrayList<Card>) cards.clone();
+	public ArrayList<Card> getCards() {
+		return new ArrayList<>(this.cards);
 	}
 
 	public String getHandName() {
@@ -266,7 +264,7 @@ public class Hand {
 	public GameImage getGameImage(boolean moveCardsDown) {
 		GameImage image = new GameImage(ImageManager.getImage("PLAYINGCARDS_HAND"), 0);
 		int x = 0;
-		int y = moveCardsDown ? 53 : 103;
+		int y = moveCardsDown ? 103 : 53;
 		for (Card card : cards) {
 			image.addGameImage(card.getGameImage(), new int[] { 24 + 16 * x, y });
 			x++;
