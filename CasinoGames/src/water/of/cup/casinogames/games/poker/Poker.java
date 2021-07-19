@@ -1,6 +1,7 @@
 package water.of.cup.casinogames.games.poker;
 
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.libs.it.unimi.dsi.fastutil.Hash;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import water.of.cup.boardgames.BoardGames;
@@ -16,17 +17,19 @@ import water.of.cup.casinogames.games.gameutils.cards.Card;
 import water.of.cup.casinogames.games.gameutils.cards.Deck;
 import water.of.cup.casinogames.games.gameutils.cards.Hand;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.*;
 
 public class Poker extends Game {
 
     private Deck pokerDeck;
-    private HashMap<GamePlayer, Hand> playerHands;
+    private LinkedHashMap<GamePlayer, Hand> playerHands;
     private HashMap<GamePlayer, ArrayList<Button>> playerButtons;
     private HashMap<GamePlayer, Button> playerSelectedButtons;
     private LinkedHashMap<GamePlayer, Integer> playerBets;
+    private ArrayList<Button> flopButtons;
+    private HashMap<GamePlayer, Button> playerHandButtons;
+    private LinkedHashMap<GamePlayer, Integer> playersAllIn;
+    private ArrayList<SidePot> sidePots;
     private Hand flopCards;
     private int currentBet;
     private int gamePot;
@@ -69,10 +72,12 @@ public class Poker extends Game {
     }
 
     private void dealCards() {
-        this.playerHands = new HashMap<>();
+        this.playerHands = new LinkedHashMap<>();
         this.flopCards = new Hand();
         this.playerSelectedButtons = new HashMap<>();
         this.playerBets = new LinkedHashMap<>();
+        this.playersAllIn = new LinkedHashMap<>();
+        this.sidePots = new ArrayList<>();
         this.currentBet = 0;
         this.gamePot = 0;
 
@@ -87,7 +92,9 @@ public class Poker extends Game {
 
     // TODO: add bets, set blinds in inventory, min entry
     private void setPokerButtons() {
+        // Sets player buttons
         this.playerButtons = new HashMap<>();
+        this.playerHandButtons = new HashMap<>();
         int posCounter = 0;
         for(GamePlayer gamePlayer : teamManager.getGamePlayers()) {
             this.playerButtons.put(gamePlayer, new ArrayList<>());
@@ -95,21 +102,18 @@ public class Poker extends Game {
             for(PokerButton pokerButton : PokerButton.values()) {
                 if(pokerButton.getxDisplacement() == 0) continue;
 
-                int rotation;
-                int[] loc = new int[] { 0, 0 };
+                int rotation = getPokerButtonRotation(posCounter);
+                int[] loc = getPokerButtonPos(posCounter);
 
                 if(posCounter > 4) {
-                    rotation = 1;
-                    loc[0] = 128 - pokerButton.getyDisplacement();
-                    loc[1] = 256 * (posCounter - 5) + pokerButton.getxDisplacement(); // Might want to change to 6 - posCounter to fix rotation
+                    loc[0] = loc[0] - pokerButton.getyDisplacement();
+                    loc[1] = loc[1] + pokerButton.getxDisplacement(); // Might want to change to 6 - posCounter to fix rotation
                 } else if(posCounter > 2){
-                    rotation = 3;
-                    loc[0] = (128 * 4) + pokerButton.getyDisplacement();
-                    loc[1] = 256 * (posCounter - 3) + 128 - pokerButton.getxDisplacement();;
+                    loc[0] = loc[0] + pokerButton.getyDisplacement();
+                    loc[1] = loc[1] - pokerButton.getxDisplacement();;
                 } else {
-                    rotation = 2;
-                    loc[0] = (256 * posCounter) + 128 - pokerButton.getxDisplacement();
-                    loc[1] = 128 - pokerButton.getyDisplacement();
+                    loc[0] = loc[0] - pokerButton.getxDisplacement();
+                    loc[1] = loc[1] - pokerButton.getyDisplacement();
                 }
 
                 Button b = new Button(this, pokerButton.getImageName(true), loc, rotation, pokerButton.toString());
@@ -125,20 +129,92 @@ public class Poker extends Game {
             posCounter++;
         }
 
-        // TODO: See where the cards should be
-        for(int i = 0; i < 5; i++) {
-            Button b = new Button(this, "POKER_FLOP", new int[]{ 128 * 2 + 42 + (i * 9), 128 + 57 }, 0, "FLOP_" + i);
+        // Sets player cards
+        posCounter = 0;
+        for(GamePlayer gamePlayer : playerHands.keySet()) {
+            Hand hand = playerHands.get(gamePlayer);
+            int rotation = getPokerButtonRotation(posCounter);
+            int[] loc = getPokerButtonPos(posCounter);
+
+            GameImage handImage = hand.getGameImage(false);
+            Button handButton = new Button(this, handImage, loc, rotation, "HAND");
+            handButton.changeLocationByRotation();
+            handButton.setVisibleForAll(false);
+            handButton.addVisiblePlayer(gamePlayer);
+            handButton.setClickable(false);
+
+            playerHandButtons.put(gamePlayer, handButton);
+            buttons.add(handButton);
+            posCounter++;
+        }
+
+        // Sets flop cards
+        this.setFlopCards();
+    }
+
+    private void setFlopCards() {
+        int[][] flopCords = new int[][] {
+                { 128 * 3, 128 * 2, 2 },
+                { 128 * 2, 128, 1 },
+                { 128 * 3, 128 * 2, 3 }
+        };
+
+        if(this.flopButtons != null) {
+            buttons.removeAll(this.flopButtons);
+        }
+
+        this.flopButtons = new ArrayList<>();
+
+        GameImage flopImage = flopCards.getGameImage(true);
+        for(int[] flopCord : flopCords) {
+            Button b = new Button(this, flopImage, flopCord, flopCord[2], "FLOP");
+            b.changeLocationByRotation();
+            this.flopButtons.add(b);
             buttons.add(b);
+        }
+    }
+
+    private int[] getPokerButtonPos(int posCounter) {
+        int[] loc = new int[] { 0, 0 };
+        if(posCounter > 4) {
+            loc[0] = 128;
+            loc[1] = 256 * (posCounter - 5); // Might want to change to 6 - posCounter to fix rotation
+        } else if(posCounter > 2){
+            loc[0] = (128 * 4);
+            loc[1] = 256 * (posCounter - 3) + 128;
+        } else {
+            loc[0] = (256 * posCounter) + 128;
+            loc[1] = 128;
+        }
+        return loc;
+    }
+
+    private int getPokerButtonRotation(int posCounter) {
+        if(posCounter > 4) {
+            return 1;
+        } else if(posCounter > 2) {
+            return 3;
+        } else {
+            return 2;
         }
     }
 
     // TODO: Add all-in check
     private boolean placeBet(GamePlayer gamePlayer, int amount) {
+        int playerBalance = (int) instance.getEconomy().getBalance(gamePlayer.getPlayer());
+        boolean allIn = playerBalance < amount;
+
         if(amount < currentBet) return false;
-        if(amount > currentBet) {
-            // Player raise
-        } else {
-            // Player calls
+
+        // if a player has gone all in, start counting new pot
+        // new pot is smallest stack
+        if(allIn) {
+            playersAllIn.put(gamePlayer, playerBalance);
+            playerBets.remove(gamePlayer);
+
+            if(playerBalance > currentBet)
+                currentBet = playerBalance;
+            return true;
         }
 
         this.playerBets.put(gamePlayer, amount);
@@ -354,7 +430,6 @@ public class Poker extends Game {
         }, betOption, currentBet);
     }
 
-    // TODO: Add selected color
     private void selectPokerButton(GamePlayer gamePlayer, Button selectedButton) {
         String buttonName = selectedButton.getName();
 
@@ -376,7 +451,7 @@ public class Poker extends Game {
             button.getImage().setImage("POKER_" + button.getName() + "_DARK");
         }
 
-        this.setPokerButton(playerButtons.get(gamePlayer), buttonName, true);
+        this.setPokerButton(playerButtons.get(gamePlayer), buttonName, "POKER_" + buttonName + "_SELECTED");
 
         this.playerSelectedButtons.put(gamePlayer, selectedButton);
 
@@ -411,21 +486,73 @@ public class Poker extends Game {
             return;
         }
 
-        // TODO: Draw flops
         // Draw flop card(s)
         int drawFlopNum = (this.flopCards.getAmountOfCards() == 0) ? 3 : 1;
         ArrayList<Card> flopCards = this.pokerDeck.draw(drawFlopNum);
         this.flopCards.addCards(flopCards);
 
+        this.setFlopCards();
+
         teamManager.setTurn(playerBets.keySet().iterator().next());
 
-        int roundPot = 0;
-        for(int bet : this.playerBets.values()) {
-            if(bet >= 0)
-                roundPot += bet;
-        }
+        if(this.playersAllIn.size() > 0) {
+            // Find smallest all in
+            ArrayList<Integer> allInBets = new ArrayList<>(this.playersAllIn.values());
+            allInBets.sort(Comparator.naturalOrder());
 
-        this.gamePot += roundPot;
+            int smallestBet = allInBets.get(0);
+            // all players can win roundPot
+            int roundPot = smallestBet * (this.playerBets.size() + this.playersAllIn.size());
+
+            SidePot firstPot = new SidePot();
+            firstPot.addPotPlayers(new ArrayList<>(this.playerBets.keySet()));
+            firstPot.addPotPlayers(new ArrayList<>(this.playersAllIn.keySet()));
+            firstPot.setPotAmount(roundPot + gamePot);
+            this.sidePots.add(firstPot);
+
+            // other side pots
+            if(this.playersAllIn.size() > 1) {
+                for(int i = 1; i < this.playersAllIn.size(); i++) {
+                    int bet = allInBets.get(i);
+                    int sidePot = bet * ((this.playersAllIn.size() - i) + this.playerBets.size());
+                    // can be won by i-playersAllIn.size() + playerBets
+
+                    // if everyone went all in and is last side pot, return money (no one can match)
+                    if(playerBets.size() == 0 && i == this.playersAllIn.size() - 1) {
+                        // return money bet - allInBets.get(i - 1)
+                    } else {
+                        SidePot newSidePot = new SidePot();
+                        newSidePot.addPotPlayers(new ArrayList<>(this.playerBets.keySet()));
+                        newSidePot.setPotAmount(sidePot);
+                        for(int j = i; j < this.playersAllIn.size(); j++) {
+                            newSidePot.addPotPlayer(new ArrayList<>(this.playersAllIn.keySet()).get(j));
+                        }
+
+                        this.sidePots.add(newSidePot);
+                    }
+                }
+            }
+
+            // TODO: set game pot to this, find hand
+            // new side pot with playerBets (becomes new game pot)
+            // currentBet - allInBets.get(i - 1)
+            gamePot = currentBet - allInBets.get(allInBets.size() - 1);
+        } else {
+            int roundPot = 0;
+            for(int bet : this.playerBets.values()) {
+                if(bet >= 0)
+                    roundPot += bet;
+            }
+
+            this.gamePot += roundPot;
+        }
+        // If players goes all in
+            // starting at smallest pot
+            // gamePot += minPot * players (75)
+        // check for other in bets
+            // return money
+        // Side pot = (playerBets + all in) - (minPot * players)
+
         this.currentBet = 0;
         this.playerBets.replaceAll((p, v) -> -1);
         this.playerSelectedButtons.clear();
@@ -445,9 +572,35 @@ public class Poker extends Game {
             this.flopCards.addCard(flopCard);
         }
 
-        // TODO: Show everyones cards
-        // TODO: Get best hand
-        super.endGame(null);
+        this.setFlopCards();
+
+        // Get best hand
+        GamePlayer winner = playerBets.keySet().iterator().next();
+
+        if(playerBets.size() > 1) {
+            ArrayList<Hand> inGameHands = new ArrayList<>();
+            for(GamePlayer inGamePlayer : playerBets.keySet()) {
+                inGameHands.add(playerHands.get(inGamePlayer));
+            }
+
+            Hand bestHand = Hand.getBestHand(inGameHands, flopCards.getCards());
+            for(GamePlayer inGamePlayer : playerBets.keySet()) {
+                Hand playerHand = playerHands.get(inGamePlayer);
+                if(bestHand.equals(playerHand)) {
+                    winner = inGamePlayer;
+                    break;
+                }
+            }
+        }
+
+        // Show everyones cards
+        for(GamePlayer inGamePlayer : playerBets.keySet()) {
+            playerHandButtons.get(inGamePlayer).setVisibleForAll(true);
+        }
+
+        mapManager.renderBoard();
+
+        super.endGame(winner);
     }
 
     private boolean checkRoundOver() {
