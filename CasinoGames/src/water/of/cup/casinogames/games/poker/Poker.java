@@ -1,17 +1,14 @@
 package water.of.cup.casinogames.games.poker;
 
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.libs.it.unimi.dsi.fastutil.Hash;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import water.of.cup.boardgames.BoardGames;
-import water.of.cup.boardgames.config.ConfigUtil;
 import water.of.cup.boardgames.game.*;
 import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.inventories.GameOption;
 import water.of.cup.boardgames.game.inventories.GameOptionType;
 import water.of.cup.boardgames.game.inventories.number.GameNumberInventory;
-import water.of.cup.boardgames.game.inventories.number.GameNumberInventoryCallback;
 import water.of.cup.boardgames.game.storage.GameStorage;
 import water.of.cup.casinogames.games.gameutils.cards.Card;
 import water.of.cup.casinogames.games.gameutils.cards.Deck;
@@ -36,7 +33,7 @@ public class Poker extends Game {
 
     private static final int AMOUNT_OF_DECKS = 1;
     private static final int BIG_BLIND = 10;
-    private static final int BET_LIMIT = 50;
+    private static final int RAISE_LIMIT = 50;
     private final BoardGames instance = BoardGames.getInstance();
 
     public Poker(int rotation) {
@@ -424,7 +421,7 @@ public class Poker extends Game {
 
     private void handlePokerBet(GamePlayer gamePlayer) {
         Player player = gamePlayer.getPlayer();
-        GameOption betOption = new GameOption("bet", Material.GOLD_INGOT, GameOptionType.COUNT, "Bet Amount:", currentBet + "", false, Math.max(1, currentBet), BET_LIMIT);
+        GameOption betOption = new GameOption("bet", Material.GOLD_INGOT, GameOptionType.COUNT, "Bet Amount:", currentBet + "", false, Math.max(1, currentBet), RAISE_LIMIT + currentBet);
         new GameNumberInventory(gameInventory).build(player, (s, betAmount) -> {
             if(betAmount > currentBet) {
                 // TODO: check if they have money
