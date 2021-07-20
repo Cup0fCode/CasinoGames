@@ -271,4 +271,19 @@ public class Hand {
 		}
 		return image;
 	}
+	
+	public int getHandBlackJackTotal() {
+		int total = 0;
+		for (Card card : cards) {
+			total += card.getValue(true);
+		}
+		if (total > 21) {
+			total = 0;
+			for (Card card : cards) {
+				total += card.getValue(false);
+			}
+		}
+		
+		return total;
+	}
 }
