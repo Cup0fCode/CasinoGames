@@ -37,7 +37,7 @@ public class Poker extends Game {
     private static final int AMOUNT_OF_DECKS = 1;
     private final BoardGames instance = BoardGames.getInstance();
 
-    // TODO: Join mid-game, player NPC, poker chips
+    // TODO: Join mid-game, player NPC, poker chips, translate messages
     public Poker(int rotation) {
         super(rotation);
     }
