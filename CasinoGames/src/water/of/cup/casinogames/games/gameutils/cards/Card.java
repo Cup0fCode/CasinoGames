@@ -22,6 +22,14 @@ public class Card {
 			return 14;
 		return num + 1;
 	}
+	
+	public int getBlackJackValue(boolean aceHigh) {
+		if (aceHigh && num == 0)
+			return 11;
+		if (num + 1 > 10)
+			return 10;
+		return num + 1;
+	}
 
 	public int getPoints() {
 		// num * 10 + suit

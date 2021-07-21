@@ -271,19 +271,28 @@ public class Hand {
 		}
 		return image;
 	}
-	
+
 	public int getHandBlackJackTotal() {
 		int total = 0;
-		for (Card card : cards) {
-			total += card.getValue(true);
-		}
-		if (total > 21) {
+
+		int maxHighAces = 0;
+		for (Card card : cards) // count aces
+			if (card.getValue(false) == 1)
+				maxHighAces++;
+
+		for (int highAces = maxHighAces; highAces >= 0; highAces--) {
 			total = 0;
+			int highAcesLeft = highAces;
 			for (Card card : cards) {
-				total += card.getValue(false);
+				int cardValue = card.getBlackJackValue(highAcesLeft > 0);
+				if (cardValue == 11)
+					highAcesLeft--;
+				total += cardValue;
 			}
+			if (total < 22)
+				break;
 		}
-		
+
 		return total;
 	}
 }
