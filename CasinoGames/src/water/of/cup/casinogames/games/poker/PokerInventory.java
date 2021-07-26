@@ -36,9 +36,10 @@ public class PokerInventory extends GameInventory {
         return 7;
     }
 
+    // Max game to 1 to auto start the game on creation
     @Override
     protected int getMaxGame() {
-        return 7;
+        return 1;
     }
 
     @Override
@@ -68,6 +69,6 @@ public class PokerInventory extends GameInventory {
 
     @Override
     protected void onGameCreate(HashMap<String, Object> hashMap, ArrayList<GamePlayer> arrayList) {
-        game.startGame();
+        game.initGame();
     }
 }
