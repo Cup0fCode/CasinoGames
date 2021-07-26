@@ -6,6 +6,7 @@ import water.of.cup.boardgames.extension.BoardGamesConfigOption;
 import water.of.cup.boardgames.extension.BoardGamesExtension;
 import water.of.cup.boardgames.game.Game;
 import water.of.cup.casinogames.config.ConfigUtil;
+import water.of.cup.casinogames.games.blackjack.Blackjack;
 import water.of.cup.casinogames.games.hilo.HiLo;
 import water.of.cup.casinogames.games.mines.Mines;
 import water.of.cup.casinogames.games.plinko.Plinko;
@@ -24,6 +25,7 @@ public class CasinoGames extends BoardGamesExtension {
 		games.add(MoneyHoney.class);
 		games.add(HiLo.class);
 		games.add(Plinko.class);
+		games.add(Blackjack.class);
 		return games;
 	}
 
