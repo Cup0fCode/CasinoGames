@@ -591,19 +591,24 @@ public class Blackjack extends Game {
 		Button cardButton = cardButtons[n].get(activePlayerHands[n]).get(0);
 		int[] cardLoc = cardButton.getLocation();
 		int rotation = cardButton.getRotation();
-		int[] locChange = new int[] { -1, 0 };
+		int[] locChange = new int[] { 0, 0 };
 
-		double[] rotater = new double[] { 0, 0 };
-		if (rotation != 2)
-			for (int i = rotation; i < 4; i++)
-				locChange = MathUtils.rotatePointAroundPoint90Degrees(rotater, locChange);
+//		double[] rotater = new double[] { 0, 0 };
+//		if (rotation != 2)
+//			for (int i = rotation; i < 4; i++)
+//				locChange = MathUtils.rotatePointAroundPoint90Degrees(rotater, locChange);
 		switch (rotation) {
+		case 1:
+			locChange[0]--;
+			locChange[1]++;
+			break;
 		case 2:
-			locChange[0] += 15;
+			locChange[0] += 15 - 2;
+			locChange[1]--;
 			break;
 		case 3:
 			locChange[0] += 21;
-			locChange[1] += 15;
+			locChange[1] += 15 - 2;
 			break;
 		}
 
