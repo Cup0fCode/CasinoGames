@@ -7,13 +7,13 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import water.of.cup.boardgames.game.GamePlayer;
 
-public class NextGameTimer extends BukkitRunnable {
+public class BlackjackNextGameTimer extends BukkitRunnable {
 	private static double TIME_UNTIL_START = 20;
 	private double lastTimeChange;
 	private double timeLeft;
 	private Blackjack game;
 
-	public NextGameTimer(Blackjack game) {
+	public BlackjackNextGameTimer(Blackjack game) {
 		lastTimeChange = System.currentTimeMillis() / 1000;
 		timeLeft = TIME_UNTIL_START;
 		this.game = game;

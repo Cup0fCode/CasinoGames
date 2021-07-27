@@ -8,14 +8,14 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import water.of.cup.boardgames.game.GamePlayer;
 
-public class TurnTimer extends BukkitRunnable {
+public class BlackjackTurnTimer extends BukkitRunnable {
 	private static double CLOCKTIME = 60;
 	private double lastTimeChange;
 	private double timeLeft;
 	private Blackjack game;
 	private Player player;
 
-	public TurnTimer(Blackjack game) {
+	public BlackjackTurnTimer(Blackjack game) {
 		lastTimeChange = System.currentTimeMillis() / 1000;
 		timeLeft = CLOCKTIME;
 		this.game = game;

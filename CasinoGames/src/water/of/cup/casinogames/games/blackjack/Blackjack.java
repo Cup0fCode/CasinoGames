@@ -51,8 +51,8 @@ public class Blackjack extends Game {
 	Button[] insuranceButtons;
 
 	// runnables:
-	NextGameTimer nextGameTimer;
-	TurnTimer turnTimer; 
+	BlackjackNextGameTimer nextGameTimer;
+	BlackjackTurnTimer turnTimer; 
 
 	@SuppressWarnings("unchecked")
 	public Blackjack(int rotation) {
@@ -195,7 +195,7 @@ public class Blackjack extends Game {
 		if (nextGameTimer != null)
 			nextGameTimer.cancel();
 
-		nextGameTimer = new NextGameTimer(this);
+		nextGameTimer = new BlackjackNextGameTimer(this);
 		nextGameTimer.runTaskTimer(BoardGames.getInstance(), 5, 5);
 		
 		if (turnTimer != null)
@@ -224,7 +224,7 @@ public class Blackjack extends Game {
 		if (turnTimer != null)
 			turnTimer.cancel();
 
-		turnTimer = new TurnTimer(this);
+		turnTimer = new BlackjackTurnTimer(this);
 		turnTimer.runTaskTimer(BoardGames.getInstance(), 5, 5);
 
 		nextTurn(-1);
