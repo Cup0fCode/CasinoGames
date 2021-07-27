@@ -52,6 +52,7 @@ public class Blackjack extends Game {
 
 	// runnables:
 	NextGameTimer nextGameTimer;
+	TurnTimer turnTimer; 
 
 	@SuppressWarnings("unchecked")
 	public Blackjack(int rotation) {
@@ -196,10 +197,16 @@ public class Blackjack extends Game {
 
 		nextGameTimer = new NextGameTimer(this);
 		nextGameTimer.runTaskTimer(BoardGames.getInstance(), 5, 5);
+		
+		if (turnTimer != null)
+			turnTimer.cancel();
 	}
 
 	@SuppressWarnings("unchecked")
 	protected void startRound() {
+		if (nextGameTimer != null)
+			nextGameTimer.cancel();
+		
 		inRound = true;
 		resetCardButtons();
 		setGameButtonVisiblePlayers();
@@ -213,6 +220,12 @@ public class Blackjack extends Game {
 
 		updatePlayerHandButtons();
 		updateDealerHandButtons(true);
+		
+		if (turnTimer != null)
+			turnTimer.cancel();
+
+		turnTimer = new TurnTimer(this);
+		turnTimer.runTaskTimer(BoardGames.getInstance(), 5, 5);
 
 		nextTurn(-1);
 		toggleActionButtons();
@@ -571,7 +584,10 @@ public class Blackjack extends Game {
 		if (n < 7) {
 			teamManager.setTurn(gamePlayerAtLocation[n]);
 			moveCurrentHandButton();
+			this.toggleActionButtons();
 			this.dealerSendMessage(n, "It is now your turn.");
+			turnTimer.start(gamePlayerAtLocation[n].getPlayer());
+			mapManager.renderBoard();
 		} else {
 			currentHandButton.setVisibleForAll(false);
 			completeDealersTurn();
@@ -579,10 +595,9 @@ public class Blackjack extends Game {
 
 	}
 
-	private void nextTurn() {
+	protected void nextTurn() {
 		int n = getPlayerBoardLocation(teamManager.getTurnPlayer());
 		nextTurn(n);
-
 	}
 
 	private void moveCurrentHandButton() {
@@ -612,7 +627,6 @@ public class Blackjack extends Game {
 		}
 
 		int[] loc = new int[] { cardLoc[0] + locChange[0], cardLoc[1] + locChange[1] };
-		// TODO: move current hand button
 		int[] bloc = currentHandButton.getLocation();
 		bloc[0] = loc[0];
 		bloc[1] = loc[1];
