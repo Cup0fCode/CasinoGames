@@ -260,8 +260,10 @@ public class Blackjack extends Game {
 	}
 
 	private void takeBets() {
-		for (GamePlayer gamePlayer : teamManager.getGamePlayers())
-			askForBet(gamePlayer);
+		for (GamePlayer gamePlayer : teamManager.getGamePlayers()) {
+			//askForBet(gamePlayer);
+			dealerSendMessage(gamePlayer.getPlayer(), "Click the table to place your next bet.");
+		}
 	}
 
 	private void askForBet(GamePlayer gamePlayer) {
