@@ -41,6 +41,7 @@ public class Blackjack extends Game {
 
 	Button[] chipHolderButtons;
 	Button[] joinButtons;
+	Button currentHandButton;
 
 	// action buttons:
 	Button[] hitButtons;
@@ -65,7 +66,6 @@ public class Blackjack extends Game {
 
 		createGameButtons();
 		prepareNextRound();
-		// TODO Auto-generated constructor stub
 	}
 
 	private void setGameButtonVisiblePlayers() {
@@ -93,6 +93,10 @@ public class Blackjack extends Game {
 		splitButtons = new Button[7];
 		insuranceButtons = new Button[7];
 		joinButtons = new Button[7];
+
+		currentHandButton = new Button(this, "BLACKJACK_CURRENTHAND", new int[] { 0, 0 }, 0, "double");
+		currentHandButton.setVisibleForAll(false);
+		buttons.add(currentHandButton);
 
 		for (int n = 0; n < 7; n++) {
 			int x = 0;
@@ -206,7 +210,7 @@ public class Blackjack extends Game {
 		deck = new Deck(1);
 
 		initialDeal();
-		
+
 		updatePlayerHandButtons();
 		updateDealerHandButtons(true);
 
@@ -277,7 +281,7 @@ public class Blackjack extends Game {
 			Player player = gamePlayerAtLocation[n].getPlayer();
 
 			boolean turn = inRound && gamePlayerAtLocation[n] == teamManager.getTurnPlayer();
-			
+
 			Hand currentHand = playerHands[n].get(activePlayerHands[n]);
 			ArrayList<Card> currentCards = currentHand.getCards();
 
@@ -285,15 +289,15 @@ public class Blackjack extends Game {
 
 			standButtons[n].setVisible(turn && currentHand.getHandBlackJackTotal() <= 21);
 
-			doubleButtons[n].setVisible(turn && 
-					currentHand.getAmountOfCards() == 2 && !doubledPlayerHands[n].get(activePlayerHands[n]));
+			doubleButtons[n].setVisible(
+					turn && currentHand.getAmountOfCards() == 2 && !doubledPlayerHands[n].get(activePlayerHands[n]));
 
 			splitButtons[n].setVisible(turn && currentCards.size() == 2
 					&& currentCards.get(0).getBlackJackValue(true) == currentCards.get(1).getBlackJackValue(true)
 					&& EconomyUtils.playerHasFunds(player, playerBets[n]));
 
-			insuranceButtons[n].setVisible(turn && 
-					canInsure && !insuredPlayers[n] && EconomyUtils.playerHasFunds(player, playerBets[n] / 2.0));
+			insuranceButtons[n].setVisible(turn && canInsure && !insuredPlayers[n]
+					&& EconomyUtils.playerHasFunds(player, playerBets[n] / 2.0));
 		}
 	}
 
@@ -305,6 +309,8 @@ public class Blackjack extends Game {
 		dealerHand = new Hand();
 		// int n = 0;
 		for (GamePlayer gamePlayer : teamManager.getGamePlayers()) {
+			if (gamePlayer == null)
+				continue;
 			int n = this.getPlayerBoardLocation(gamePlayer);
 			if (playerBets[n] == 0)
 				continue;
@@ -506,6 +512,7 @@ public class Blackjack extends Game {
 		// ask for bet if not in round and player has not bet while in game
 		if (gamePlayer != null && !this.inRound && playerBets[n] == 0) {
 			askForBet(gamePlayer);
+			return;
 		}
 
 		Button b = getClickedButton(gamePlayer, clickLoc);
@@ -538,7 +545,7 @@ public class Blackjack extends Game {
 				c++;
 			}
 			join(player, c);
-			break;
+			return;
 		}
 
 		updatePlayerHandButtons();
@@ -555,21 +562,21 @@ public class Blackjack extends Game {
 			nextTurn();
 
 	}
-	
+
 	private void nextTurn(int n) {
 		do {
 			n++;
-		} while (n < 6 && (gamePlayerAtLocation[n] == null || (playerBets[n] == 0)));
+		} while (n < 7 && (gamePlayerAtLocation[n] == null || (playerBets[n] == 0)));
 
-		if (gamePlayerAtLocation[n] != null) {
+		if (n < 7) {
 			teamManager.setTurn(gamePlayerAtLocation[n]);
 			moveCurrentHandButton();
 			this.dealerSendMessage(n, "It is now your turn.");
 		} else {
-			// TODO: make currentHandButton invisible
+			currentHandButton.setVisibleForAll(false);
 			completeDealersTurn();
 		}
-		
+
 	}
 
 	private void nextTurn() {
@@ -583,15 +590,30 @@ public class Blackjack extends Game {
 		Button cardButton = cardButtons[n].get(activePlayerHands[n]).get(0);
 		int[] cardLoc = cardButton.getLocation();
 		int rotation = cardButton.getRotation();
-		int[] locChange = new int[] { 0, -10 };
+		int[] locChange = new int[] { -1, 0 };
 
 		double[] rotater = new double[] { 0, 0 };
 		if (rotation != 2)
 			for (int i = rotation; i < 4; i++)
 				locChange = MathUtils.rotatePointAroundPoint90Degrees(rotater, locChange);
+		switch (rotation) {
+		case 2:
+			locChange[0] += 15;
+			break;
+		case 3:
+			locChange[0] += 21;
+			locChange[1] += 15;
+			break;
+		}
 
 		int[] loc = new int[] { cardLoc[0] + locChange[0], cardLoc[1] + locChange[1] };
 		// TODO: move current hand button
+		int[] bloc = currentHandButton.getLocation();
+		bloc[0] = loc[0];
+		bloc[1] = loc[1];
+		currentHandButton.setRotation(rotation);
+		currentHandButton.changeLocationByRotation();
+		currentHandButton.setVisibleForAll(true);
 
 	}
 
@@ -741,9 +763,13 @@ public class Blackjack extends Game {
 		doubledPlayerHands[n].add(false);
 
 		if (cards.get(0).getBlackJackValue(false) == 1) {
+			dealerSendMessage(n, "You split aces and have no more moves.");
 			nextTurn();
+		} else {
+			this.updatePlayerHandButtons();
+			moveCurrentHandButton();	
 		}
-
+		
 	}
 
 	private void stand(int n) {
@@ -761,9 +787,18 @@ public class Blackjack extends Game {
 
 	@Override
 	public void exitPlayer(Player player) {
-		gamePlayerAtLocation[this.getPlayerBoardLocation(teamManager.getGamePlayer(player))] = null;
-		if (teamManager.getGamePlayer(player) == teamManager.getTurnPlayer())
+		int n = this.getPlayerBoardLocation(teamManager.getGamePlayer(player));
+		gamePlayerAtLocation[n] = null;
+		if (!inRound && playerBets[n] != 0) {
+			EconomyUtils.playerGiveMoney(player, playerBets[n]);
+			this.dealerSendMessage(player, "Your bet of $" + playerBets[n] + " was returned to you.");
+		}
+
+		playerBets[n] = 0;
+
+		if (inRound && teamManager.getGamePlayer(player) == teamManager.getTurnPlayer())
 			nextTurn();
+
 		super.exitPlayer(player);
 		this.toggleJoinButtons();
 		mapManager.renderBoard();
