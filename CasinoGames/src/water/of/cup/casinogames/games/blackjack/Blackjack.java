@@ -420,7 +420,6 @@ public class Blackjack extends Game {
 					cardButton.changeLocationByRotation();
 					cardButtons[n].get(handNum).add(cardButton);
 					buttons.add(cardButton);
-					gamePlayerAtLocation[n].getPlayer().sendMessage("Added card");
 				}
 				handNum++;
 			}
@@ -520,7 +519,7 @@ public class Blackjack extends Game {
 		if (b == null)
 			return;
 
-		player.sendMessage("clicked: " + b.getName());
+		//player.sendMessage("clicked: " + b.getName());
 
 		switch (b.getName()) {
 		case "hit":
@@ -672,6 +671,9 @@ public class Blackjack extends Game {
 				if (dealerScore > 21 || score > dealerScore) {
 					if (dealerScore <= 21)
 						this.dealerSendMessage(n, "Your hand won, beating mine " + score + ":" + dealerScore);
+					else 
+						this.dealerSendMessage(n, "My hand busted, your hand won");
+					
 					double won = 2;
 
 					if (blackjack)
