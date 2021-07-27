@@ -276,8 +276,9 @@ public class Blackjack extends Game {
 		boolean canInsure = (dealerHand.getCards().get(0).getBlackJackValue(false) == 1);
 
 		for (int n = 0; n < 7; n++) {
-			if (gamePlayerAtLocation[n] == null)
+			if (gamePlayerAtLocation[n] == null || playerBets[n] == 0)
 				continue;
+			
 			Player player = gamePlayerAtLocation[n].getPlayer();
 
 			boolean turn = inRound && gamePlayerAtLocation[n] == teamManager.getTurnPlayer();
@@ -767,9 +768,9 @@ public class Blackjack extends Game {
 			nextTurn();
 		} else {
 			this.updatePlayerHandButtons();
-			moveCurrentHandButton();	
+			moveCurrentHandButton();
 		}
-		
+
 	}
 
 	private void stand(int n) {
@@ -798,8 +799,11 @@ public class Blackjack extends Game {
 
 		if (inRound && teamManager.getGamePlayer(player) == teamManager.getTurnPlayer())
 			nextTurn();
-
-		super.exitPlayer(player);
+		teamManager.removeTeamByPlayer(player);
+		
+		if (inRound)
+			toggleActionButtons();
+		
 		this.toggleJoinButtons();
 		mapManager.renderBoard();
 	}
