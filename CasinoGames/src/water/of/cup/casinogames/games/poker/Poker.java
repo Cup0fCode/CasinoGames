@@ -31,6 +31,7 @@ public class Poker extends Game {
     private ArrayList<SidePot> sidePots;
     private HashMap<GamePlayer, Integer> spotsTaken;
     private Hand flopCards;
+    private PokerTimer pokerTimer;
     private int firstBetIndex;
     private int currentBet;
     private int gamePot;
@@ -41,6 +42,7 @@ public class Poker extends Game {
     private final BoardGames instance = BoardGames.getInstance();
 
     // TODO: player NPC, poker chips, translate messages, game timer
+    // TODO: Check firstbetindex, exit
     public Poker(int rotation) {
         super(rotation);
     }
@@ -55,6 +57,10 @@ public class Poker extends Game {
     protected void startGame() {
         // Reorder team manager
         this.setTeamOrder();
+
+        boolean canStart = canStartNextGame();
+        if(!canStart)
+            return;
 
         // Clear renderers
         buttons.clear();
@@ -112,6 +118,8 @@ public class Poker extends Game {
 
         // init array of spots taken
         this.spotsTaken = new HashMap<>();
+
+        this.firstBetIndex = -1;
 
         // show player avail spots, keep track of spots taken
         this.renderAvailableSpots();
@@ -488,14 +496,11 @@ public class Poker extends Game {
 
         setPokerPlayerButtons(player, spot);
 
-        // Start game TODO: Change with timer
-        if(spotsTaken.size() >= 2 && playerBets == null) {
+        // Start game
+        if(spotsTaken.size() == 2 && playerBets == null) {
             sendGameMessage("Game starting!");
 
-            startGame();
-            return;
-        } else {
-            // Add player next game
+            prepareNextRound();
         }
 
         mapManager.renderBoard();
@@ -683,7 +688,8 @@ public class Poker extends Game {
 
         this.setFlopCards();
 
-        teamManager.setTurn(playerBets.keySet().iterator().next());
+        // Find player
+        teamManager.setTurn(getStartingPlayer());
 
         this.currentBet = 0;
         this.playerBets.replaceAll((p, v) -> -1);
@@ -698,6 +704,16 @@ public class Poker extends Game {
         for(Card card : this.flopCards.getCards()) {
             sendGameMessage(card.getValue() + "" + card.getSuit().toString());
         }
+    }
+
+    private GamePlayer getStartingPlayer() {
+        int playerIndex = firstBetIndex >= teamManager.getGamePlayers().size() ? 0 : firstBetIndex;
+        while (!playerBets.containsKey(teamManager.getGamePlayers().get(playerIndex))) {
+            playerIndex++;
+            if(playerIndex >= teamManager.getGamePlayers().size())
+                playerIndex = 0;
+        }
+        return teamManager.getGamePlayers().get(playerIndex);
     }
 
     private void endRound(boolean endGame) {
@@ -737,30 +753,43 @@ public class Poker extends Game {
         if(!endGame) {
             sendGameMessage("Starting next game...");
 
-            // Make sure players still have enough money
-            for(GamePlayer gamePlayer : teamManager.getGamePlayers()) {
-                double playerBalance = instance.getEconomy().getBalance(gamePlayer.getPlayer());
-                if(playerBalance < this.BIG_BLIND) {
-                    sendGameMessage(gamePlayer.getPlayer().getDisplayName() + " has been removed for not having enough money.");
-                    teamManager.removeTeamByPlayer(gamePlayer.getPlayer());
-                }
-            }
-
-            if(teamManager.getGamePlayers().size() <= 1) {
-                sendGameMessage("Not enough players to start next game.");
-                clearGamePlayers();
-                super.endGame(null);
-                return;
-            }
-
-            // Open up spots
-            spotsTaken.keySet().removeIf(gamePlayer -> !teamManager.getGamePlayers().contains(gamePlayer));
-
-            int playerIndex = firstBetIndex + 1 >= teamManager.getGamePlayers().size() ? 0 : firstBetIndex + 1;
-            teamManager.setTurn(teamManager.getGamePlayers().get(playerIndex));
-
-            startGame();
+            prepareNextRound();
         }
+    }
+
+    private void prepareNextRound() {
+        playerBets = null;
+
+        if (pokerTimer != null)
+            pokerTimer.cancel();
+
+        pokerTimer = new PokerTimer(this);
+        pokerTimer.runTaskTimer(BoardGames.getInstance(), 5, 5);
+    }
+
+    private boolean canStartNextGame() {
+        // Make sure players still have enough money
+        for(GamePlayer gamePlayer : teamManager.getGamePlayers()) {
+            double playerBalance = instance.getEconomy().getBalance(gamePlayer.getPlayer());
+            if(playerBalance < this.BIG_BLIND) {
+                sendGameMessage(gamePlayer.getPlayer().getDisplayName() + " has been removed for not having enough money.");
+                teamManager.removeTeamByPlayer(gamePlayer.getPlayer());
+            }
+        }
+
+        if(teamManager.getGamePlayers().size() <= 1) {
+            sendGameMessage("Not enough players to start next game.");
+            resetGame();
+            return false;
+        }
+
+        // Open up spots
+        spotsTaken.keySet().removeIf(gamePlayer -> !teamManager.getGamePlayers().contains(gamePlayer));
+
+        int playerIndex = firstBetIndex + 1 >= teamManager.getGamePlayers().size() ? 0 : firstBetIndex + 1;
+        teamManager.setTurn(teamManager.getGamePlayers().get(playerIndex));
+
+        return true;
     }
 
     private boolean checkRoundOver() {
@@ -846,6 +875,9 @@ public class Poker extends Game {
     private void resetGame() {
         // Remove join buttons, game over
         buttons.removeIf(button -> button.getName().startsWith("JOIN_GAME"));
+
+        if (pokerTimer != null)
+            pokerTimer.cancel();
 
         playerBets = null;
         clearGamePlayers();
