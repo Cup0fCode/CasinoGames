@@ -52,7 +52,7 @@ public class Blackjack extends Game {
 
 	// runnables:
 	BlackjackNextGameTimer nextGameTimer;
-	BlackjackTurnTimer turnTimer; 
+	BlackjackTurnTimer turnTimer;
 
 	@SuppressWarnings("unchecked")
 	public Blackjack(int rotation) {
@@ -118,6 +118,7 @@ public class Blackjack extends Game {
 			int[] standLoc = new int[] { 128 - 40, 15 };
 			int[] doubleLoc = new int[] { 128 - 80, 15 };
 			int[] chipHolderLoc = new int[] { 128 - 54, 60 };
+			int[] joinLoc = new int[] { 128 - 54 + 1, 60 + 1 };
 			int[] splitLoc = new int[] { 128 - 80, 25 };
 			int[] insurancLoc = new int[] { 128 - 10, 25 };
 
@@ -130,6 +131,7 @@ public class Blackjack extends Game {
 					chipHolderLoc = MathUtils.rotatePointAroundPoint90Degrees(rotater, chipHolderLoc);
 					splitLoc = MathUtils.rotatePointAroundPoint90Degrees(rotater, splitLoc);
 					insurancLoc = MathUtils.rotatePointAroundPoint90Degrees(rotater, insurancLoc);
+					joinLoc = MathUtils.rotatePointAroundPoint90Degrees(rotater, joinLoc);
 				}
 
 			hitButtons[n] = new Button(this, "BLACKJACK_HIT", new int[] { hitLoc[0] + x, hitLoc[1] + y }, rotation,
@@ -173,8 +175,8 @@ public class Blackjack extends Game {
 			chipHolderButtons[n].changeLocationByRotation();
 			buttons.add(chipHolderButtons[n]);
 
-			joinButtons[n] = new Button(this, "BLACKJACK_JOIN",
-					new int[] { chipHolderLoc[0] + x, chipHolderLoc[1] + y }, rotation, "join");
+			joinButtons[n] = new Button(this, "BLACKJACK_JOIN", new int[] { joinLoc[0] + x, joinLoc[1] + y }, rotation,
+					"join");
 			joinButtons[n].setVisibleForAll(true);
 			joinButtons[n].setClickable(true);
 			joinButtons[n].changeLocationByRotation();
@@ -197,7 +199,7 @@ public class Blackjack extends Game {
 
 		nextGameTimer = new BlackjackNextGameTimer(this);
 		nextGameTimer.runTaskTimer(BoardGames.getInstance(), 5, 5);
-		
+
 		if (turnTimer != null)
 			turnTimer.cancel();
 	}
@@ -206,7 +208,7 @@ public class Blackjack extends Game {
 	protected void startRound() {
 		if (nextGameTimer != null)
 			nextGameTimer.cancel();
-		
+
 		inRound = true;
 		resetCardButtons();
 		setGameButtonVisiblePlayers();
@@ -220,7 +222,7 @@ public class Blackjack extends Game {
 
 		updatePlayerHandButtons();
 		updateDealerHandButtons(true);
-		
+
 		if (turnTimer != null)
 			turnTimer.cancel();
 
@@ -291,7 +293,7 @@ public class Blackjack extends Game {
 		for (int n = 0; n < 7; n++) {
 			if (gamePlayerAtLocation[n] == null || playerBets[n] == 0)
 				continue;
-			
+
 			Player player = gamePlayerAtLocation[n].getPlayer();
 
 			boolean turn = inRound && gamePlayerAtLocation[n] == teamManager.getTurnPlayer();
@@ -532,7 +534,7 @@ public class Blackjack extends Game {
 		if (b == null)
 			return;
 
-		//player.sendMessage("clicked: " + b.getName());
+		// player.sendMessage("clicked: " + b.getName());
 
 		switch (b.getName()) {
 		case "hit":
@@ -685,9 +687,9 @@ public class Blackjack extends Game {
 				if (dealerScore > 21 || score > dealerScore) {
 					if (dealerScore <= 21)
 						this.dealerSendMessage(n, "Your hand won, beating mine " + score + ":" + dealerScore);
-					else 
+					else
 						this.dealerSendMessage(n, "My hand busted, your hand won");
-					
+
 					double won = 2;
 
 					if (blackjack)
@@ -821,10 +823,10 @@ public class Blackjack extends Game {
 		if (inRound && teamManager.getGamePlayer(player) == teamManager.getTurnPlayer())
 			nextTurn();
 		teamManager.removeTeamByPlayer(player);
-		
+
 		if (inRound)
 			toggleActionButtons();
-		
+
 		this.toggleJoinButtons();
 		mapManager.renderBoard();
 	}
