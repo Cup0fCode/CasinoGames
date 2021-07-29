@@ -16,7 +16,6 @@ import water.of.cup.casinogames.games.gameutils.cards.Deck;
 import water.of.cup.casinogames.games.gameutils.cards.Hand;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Poker extends Game {
 
@@ -31,7 +30,8 @@ public class Poker extends Game {
     private ArrayList<SidePot> sidePots;
     private HashMap<GamePlayer, Integer> spotsTaken;
     private Hand flopCards;
-    private PokerTimer pokerTimer;
+    private PokerGameTimer pokerTimer;
+    private PokerTurnTimer pokerTurnTimer;
     private int firstBetIndex;
     private int currentBet;
     private int gamePot;
@@ -41,8 +41,7 @@ public class Poker extends Game {
     private static final int AMOUNT_OF_DECKS = 1;
     private final BoardGames instance = BoardGames.getInstance();
 
-    // TODO: player NPC, poker chips, translate messages, game timer
-    // TODO: Check firstbetindex, exit
+    // TODO: player NPC, poker chips, translate messages, game timer for each round
     public Poker(int rotation) {
         super(rotation);
     }
@@ -356,7 +355,7 @@ public class Poker extends Game {
         this.setPokerButton(playerButtons.get(gamePlayer), "CALL_ANY", true);
     }
 
-    private void nextTurn() {
+    protected void nextTurn() {
         if(playerBets.size() >= 1) {
             GamePlayer nextPlayer = teamManager.nextTurn();
 
@@ -371,6 +370,8 @@ public class Poker extends Game {
                 this.playerSelectedButtons.remove(nextPlayer);
                 return;
             }
+
+            pokerTurnTimer.start(nextPlayer.getPlayer());
         }
 
         boolean roundOver = checkRoundOver();
@@ -380,6 +381,10 @@ public class Poker extends Game {
         }
 
         this.reRenderPokerButtons();
+    }
+
+    protected void reRenderBoard() {
+        mapManager.renderBoard();
     }
 
     private void setPokerButton(ArrayList<Button> buttons, String buttonName, boolean isToggled) {
@@ -500,7 +505,7 @@ public class Poker extends Game {
         if(spotsTaken.size() == 2 && playerBets == null) {
             sendGameMessage("Game starting!");
 
-            prepareNextRound();
+            prepareNextGame();
         }
 
         mapManager.renderBoard();
@@ -597,7 +602,7 @@ public class Poker extends Game {
             this.playerBets.put(gamePlayer, 0);
     }
 
-    private void foldGamePlayer(GamePlayer gamePlayer) {
+    protected void foldGamePlayer(GamePlayer gamePlayer) {
         sendGameMessage(gamePlayer.getPlayer().getDisplayName() + " has folded");
 
         // Add their bet to the pot
@@ -689,7 +694,9 @@ public class Poker extends Game {
         this.setFlopCards();
 
         // Find player
-        teamManager.setTurn(getStartingPlayer());
+        GamePlayer startingPlayer = getStartingPlayer();
+        teamManager.setTurn(startingPlayer);
+        pokerTurnTimer.start(startingPlayer.getPlayer());
 
         this.currentBet = 0;
         this.playerBets.replaceAll((p, v) -> -1);
@@ -753,17 +760,20 @@ public class Poker extends Game {
         if(!endGame) {
             sendGameMessage("Starting next game...");
 
-            prepareNextRound();
+            prepareNextGame();
         }
     }
 
-    private void prepareNextRound() {
+    private void prepareNextGame() {
         playerBets = null;
 
         if (pokerTimer != null)
             pokerTimer.cancel();
 
-        pokerTimer = new PokerTimer(this);
+        if(pokerTurnTimer != null)
+            pokerTurnTimer.cancel();
+
+        pokerTimer = new PokerGameTimer(this);
         pokerTimer.runTaskTimer(BoardGames.getInstance(), 5, 5);
     }
 
@@ -789,6 +799,11 @@ public class Poker extends Game {
         int playerIndex = firstBetIndex + 1 >= teamManager.getGamePlayers().size() ? 0 : firstBetIndex + 1;
         teamManager.setTurn(teamManager.getGamePlayers().get(playerIndex));
 
+        if (pokerTurnTimer != null)
+            pokerTurnTimer.cancel();
+
+        pokerTurnTimer = new PokerTurnTimer(this);
+        pokerTurnTimer.runTaskTimer(BoardGames.getInstance(), 5, 5);
         return true;
     }
 
