@@ -10,6 +10,7 @@ import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.inventories.GameOption;
 import water.of.cup.boardgames.game.inventories.GameOptionType;
 import water.of.cup.boardgames.game.inventories.number.GameNumberInventory;
+import water.of.cup.boardgames.game.npcs.GameNPC;
 import water.of.cup.boardgames.game.storage.GameStorage;
 import water.of.cup.casinogames.games.gameutils.cards.Card;
 import water.of.cup.casinogames.games.gameutils.cards.Deck;
@@ -41,7 +42,7 @@ public class Poker extends Game {
     private static final int AMOUNT_OF_DECKS = 1;
     private final BoardGames instance = BoardGames.getInstance();
 
-    // TODO: player NPC, poker chips, translate messages, game timer for each round
+    // TODO: player NPC loc, poker chips, translate messages
     public Poker(int rotation) {
         super(rotation);
     }
@@ -385,6 +386,10 @@ public class Poker extends Game {
 
     protected void reRenderBoard() {
         mapManager.renderBoard();
+    }
+
+    protected void lookAtPlayer(Player player) {
+        gameNPC.lookAt(player);
     }
 
     private void setPokerButton(ArrayList<Button> buttons, String buttonName, boolean isToggled) {
@@ -775,6 +780,8 @@ public class Poker extends Game {
 
         pokerTimer = new PokerGameTimer(this);
         pokerTimer.runTaskTimer(BoardGames.getInstance(), 5, 5);
+
+        gameNPC.spawnNPC();
     }
 
     private boolean canStartNextGame() {
@@ -891,8 +898,13 @@ public class Poker extends Game {
         // Remove join buttons, game over
         buttons.removeIf(button -> button.getName().startsWith("JOIN_GAME"));
 
+        gameNPC.removeNPC();
+
         if (pokerTimer != null)
             pokerTimer.cancel();
+
+        if (pokerTurnTimer != null)
+            pokerTurnTimer.cancel();
 
         playerBets = null;
         clearGamePlayers();
@@ -924,5 +936,10 @@ public class Poker extends Game {
         }
 
         return lastElement;
+    }
+
+    @Override
+    public GameNPC getGameNPC() {
+        return new PokerNPC(new double[] { -0.5, 0, 1.5 });
     }
 }

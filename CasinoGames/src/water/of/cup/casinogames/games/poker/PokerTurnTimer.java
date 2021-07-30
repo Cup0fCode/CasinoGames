@@ -33,6 +33,8 @@ public class PokerTurnTimer extends BukkitRunnable {
         if (player == null)
             return;
 
+        game.lookAtPlayer(player);
+
         double time = System.currentTimeMillis() / 1000;
         double difference = time - lastTimeChange;
         lastTimeChange = time;
