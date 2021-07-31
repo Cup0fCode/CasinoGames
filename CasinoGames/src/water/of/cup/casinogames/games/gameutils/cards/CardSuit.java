@@ -18,4 +18,20 @@ public enum CardSuit {
 		
 		}
 	}
+	
+	public String getName() {
+		switch (this) {
+		case CLUBS:
+			return "Clubs";
+		case DIAMONDS:
+			return "Diamonds";
+		case HEARTS:
+			return "Hearts";
+		case SPADES:
+			return "Spades";
+		default:
+			return "Joker";
+		
+		}
+	}
 }
