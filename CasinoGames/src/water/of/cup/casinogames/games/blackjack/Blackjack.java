@@ -259,6 +259,11 @@ public class Blackjack extends Game {
 		dealerSendMessage(player, message);
 	}
 
+	private void dealerSendAll(String message) {
+		for (GamePlayer player : teamManager.getGamePlayers())
+			player.getPlayer().sendMessage("Dealer: " + message);
+	}
+	
 	private void takeBets() {
 		for (GamePlayer gamePlayer : teamManager.getGamePlayers()) {
 			//askForBet(gamePlayer);
@@ -340,7 +345,8 @@ public class Blackjack extends Game {
 			doubledPlayerHands[n].add(false);
 		}
 		dealerHand.draw(deck, 2);
-
+		String dealerCardName = dealerHand.getCards().get(0).getShortName(); 
+		dealerSendAll("I drew a" + (dealerCardName.charAt(0) == 'A' ? "n " : " ") + dealerCardName + ".");
 	}
 
 	private void updateDealerHandButtons(boolean cardDown) {
@@ -642,11 +648,13 @@ public class Blackjack extends Game {
 	}
 
 	private void completeDealersTurn() {
-		if (dealerHand.getHandBlackJackTotal() == 21) {
-			// natural BlackJack
-		}
+		String dealerCardName = dealerHand.getCards().get(1).getShortName(); 
+		dealerSendAll("I flipped a" + (dealerCardName.charAt(0) == 'A' ? "n " : " ") + dealerCardName + ".");
+		
 		while (dealerHand.getHandBlackJackTotal() < 17) {
 			dealerHand.draw(deck);
+			dealerCardName = dealerHand.getCards().get(dealerHand.getAmountOfCards() - 1).getShortName(); 
+			dealerSendAll("I drew a" + (dealerCardName.charAt(0) == 'A' ? "n " : " ") + dealerCardName + ".");
 		}
 		int dealerScore = dealerHand.getHandBlackJackTotal();
 		boolean dealerBlackjack = dealerScore == 21;
