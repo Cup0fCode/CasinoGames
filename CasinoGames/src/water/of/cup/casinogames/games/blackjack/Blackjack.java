@@ -358,11 +358,12 @@ public class Blackjack extends Game {
 			if (cardDown && cardNum == 1)
 				break;
 
-			// TODO: blow up card size
 			// set button location
-			int[] cardLoc = new int[] { 64 - 7 - cardNum * 7, cardNum * 10 };
+			int[] cardLoc = new int[] { 64 - 14 - cardNum * 14, cardNum * 20 };
+			GameImage cardImage = card.getGameImage();
+			cardImage.resize(2);
 
-			Button cardButton = new Button(this, card.getGameImage(), new int[] { cardLoc[0] + x, cardLoc[1] + y },
+			Button cardButton = new Button(this, cardImage, new int[] { cardLoc[0] + x, cardLoc[1] + y },
 					rotation, "dealercard");
 			cardButton.setVisibleForAll(true);
 			cardButton.changeLocationByRotation();
