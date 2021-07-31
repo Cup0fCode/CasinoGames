@@ -354,8 +354,8 @@ public class Blackjack extends Game {
 
 		int cardNum = -1;
 		int rotation = 2;
-		int x = 2 * 128;
-		int y = 2 * 128;
+		int x = 2 * 128 + 64 + 7;
+		int y = 2 * 128 - 64;
 
 		for (Card card : dealerHand.getCards()) {
 			cardNum++;
@@ -365,7 +365,7 @@ public class Blackjack extends Game {
 				break;
 
 			// set button location
-			int[] cardLoc = new int[] { 64 - 14 - cardNum * 14, cardNum * 20 };
+			int[] cardLoc = new int[] { -cardNum * 14, cardNum * 20 };
 			GameImage cardImage = card.getGameImage();
 			cardImage.resize(2);
 
