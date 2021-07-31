@@ -7,7 +7,9 @@ import water.of.cup.boardgames.config.ConfigInterface;
 public enum ConfigUtil implements ConfigInterface {
     GUI_BOMB_AMOUNT_LABEL("settings.messages.gui.bombamountlabel", "&2Bomb Amount: "),
     GUI_BET_AMOUNT_LABEL("settings.messages.gui.betamountlabel", "&2Bet Amount: "),
-    GUI_MINES_CASH_OUT("settings.messages.gui.minescashout", "&aCash-Out");
+    GUI_MINES_CASH_OUT("settings.messages.gui.minescashout", "&aCash-Out"),
+    GUI_POKER_MIN_ENTRY_LABEL("settings.messages.gui.pokerminentrylabel", "&aMinimum Entry: "),
+    GUI_POKER_RAISE_LIMIT_LABEL("settings.messages.gui.pokerraiselimitlabel", "&aRaise Limit: ");
 
     private final String path;
     private final String defaultValue;

@@ -1,7 +1,6 @@
 package water.of.cup.casinogames.games.poker;
 
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.libs.it.unimi.dsi.fastutil.Hash;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import water.of.cup.boardgames.BoardGames;
@@ -11,7 +10,7 @@ import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.inventories.GameOption;
 import water.of.cup.boardgames.game.inventories.GameOptionType;
 import water.of.cup.boardgames.game.inventories.number.GameNumberInventory;
-import water.of.cup.boardgames.game.inventories.number.GameNumberInventoryCallback;
+import water.of.cup.boardgames.game.npcs.GameNPC;
 import water.of.cup.boardgames.game.storage.GameStorage;
 import water.of.cup.casinogames.games.gameutils.cards.Card;
 import water.of.cup.casinogames.games.gameutils.cards.Deck;
@@ -30,15 +29,20 @@ public class Poker extends Game {
     private HashMap<GamePlayer, Button> playerHandButtons;
     private LinkedHashMap<GamePlayer, Integer> playersAllIn;
     private ArrayList<SidePot> sidePots;
+    private HashMap<GamePlayer, Integer> spotsTaken;
     private Hand flopCards;
+    private PokerGameTimer pokerTimer;
+    private PokerTurnTimer pokerTurnTimer;
+    private int firstBetIndex;
     private int currentBet;
     private int gamePot;
+    private int BIG_BLIND;
+    private int RAISE_LIMIT;
 
     private static final int AMOUNT_OF_DECKS = 1;
-    private static final int BIG_BLIND = 10;
-    private static final int BET_LIMIT = 50;
     private final BoardGames instance = BoardGames.getInstance();
 
+    // TODO: player NPC loc, poker chips, translate messages
     public Poker(int rotation) {
         super(rotation);
     }
@@ -51,6 +55,13 @@ public class Poker extends Game {
 
     @Override
     protected void startGame() {
+        // Reorder team manager
+        this.setTeamOrder();
+
+        boolean canStart = canStartNextGame();
+        if(!canStart)
+            return;
+
         // Clear renderers
         buttons.clear();
         super.startGame();
@@ -61,14 +72,79 @@ public class Poker extends Game {
         // Deal cards to players, init flop cards
         this.dealCards();
 
+        // Render in available spots
+        this.renderAvailableSpots();
+
         // Render in game buttons
         this.setPokerButtons();
-
-        super.setInGame();
 
         this.takeBlindBets();
 
         mapManager.renderBoard();
+    }
+
+    private void setTeamOrder() {
+        teamManager.resetTeams();
+        for(int i = 0; i < 7; i++) {
+            if(spotsTaken.containsValue(i)) {
+                teamManager.addTeam(getPlayerBySpot(i));
+            }
+        }
+    }
+
+    private GamePlayer getPlayerBySpot(int spot) {
+        for(GamePlayer gamePlayer : spotsTaken.keySet()) {
+            if(spotsTaken.get(gamePlayer) == spot)
+                return gamePlayer;
+        }
+
+        return null;
+    }
+
+    // Call inside poker inv
+    protected void initGame() {
+        if(hasGameData("minEntry") && hasGameData("raiseLimit")) {
+            this.BIG_BLIND = (int) getGameData("minEntry");
+            this.RAISE_LIMIT = (int) getGameData("raiseLimit");
+        } else {
+            this.BIG_BLIND = 0;
+            this.RAISE_LIMIT = 0;
+        }
+
+        // Clear old buttons
+        buttons.clear();
+
+        super.setInGame();
+
+        // init array of spots taken
+        this.spotsTaken = new HashMap<>();
+
+        this.firstBetIndex = -1;
+
+        // show player avail spots, keep track of spots taken
+        this.renderAvailableSpots();
+
+        gameNPC.spawnNPC();
+
+        mapManager.renderBoard();
+    }
+
+    private void renderAvailableSpots() {
+        buttons.removeIf(button -> button.getName().startsWith("JOIN_GAME"));
+
+        for(int i = 0; i < 7; i++) {
+            if(spotsTaken.containsValue(i)) continue;
+
+            int rotation = getPokerButtonRotation(i);
+            int[] loc = getPokerButtonPos(i);
+
+            transformCords(loc, 37, 111, i);
+
+            Button b = new Button(this, "POKER_JOIN_GAME", loc, rotation, "JOIN_GAME_" + i);
+            b.changeLocationByRotation();
+            b.setClickable(true);
+            buttons.add(b);
+        }
     }
 
     private void dealCards() {
@@ -90,51 +166,20 @@ public class Poker extends Game {
         }
     }
 
-    // TODO: add bets, set blinds in inventory, min entry
     private void setPokerButtons() {
         // Sets player buttons
         this.playerButtons = new HashMap<>();
         this.playerHandButtons = new HashMap<>();
-        int posCounter = 0;
         for(GamePlayer gamePlayer : teamManager.getGamePlayers()) {
             this.playerButtons.put(gamePlayer, new ArrayList<>());
 
-            for(PokerButton pokerButton : PokerButton.values()) {
-                if(pokerButton.getxDisplacement() == 0) continue;
+            int spot = spotsTaken.get(gamePlayer);
+            ArrayList<Button> playerButtons = setPokerPlayerButtons(gamePlayer, spot);
+            this.playerButtons.get(gamePlayer).addAll(playerButtons);
 
-                int rotation = getPokerButtonRotation(posCounter);
-                int[] loc = getPokerButtonPos(posCounter);
-
-                if(posCounter > 4) {
-                    loc[0] = loc[0] - pokerButton.getyDisplacement();
-                    loc[1] = loc[1] + pokerButton.getxDisplacement(); // Might want to change to 6 - posCounter to fix rotation
-                } else if(posCounter > 2){
-                    loc[0] = loc[0] + pokerButton.getyDisplacement();
-                    loc[1] = loc[1] - pokerButton.getxDisplacement();;
-                } else {
-                    loc[0] = loc[0] - pokerButton.getxDisplacement();
-                    loc[1] = loc[1] - pokerButton.getyDisplacement();
-                }
-
-                Button b = new Button(this, pokerButton.getImageName(true), loc, rotation, pokerButton.toString());
-                b.changeLocationByRotation();
-                b.setVisibleForAll(false);
-                b.addVisiblePlayer(gamePlayer);
-                b.setClickable(true);
-
-                buttons.add(b);
-                this.playerButtons.get(gamePlayer).add(b);
-            }
-
-            posCounter++;
-        }
-
-        // Sets player cards
-        posCounter = 0;
-        for(GamePlayer gamePlayer : playerHands.keySet()) {
             Hand hand = playerHands.get(gamePlayer);
-            int rotation = getPokerButtonRotation(posCounter);
-            int[] loc = getPokerButtonPos(posCounter);
+            int rotation = getPokerButtonRotation(spot);
+            int[] loc = getPokerButtonPos(spot);
 
             GameImage handImage = hand.getGameImage(false);
             Button handButton = new Button(this, handImage, loc, rotation, "HAND");
@@ -145,11 +190,32 @@ public class Poker extends Game {
 
             playerHandButtons.put(gamePlayer, handButton);
             buttons.add(handButton);
-            posCounter++;
         }
 
         // Sets flop cards
         this.setFlopCards();
+    }
+
+    private ArrayList<Button> setPokerPlayerButtons(GamePlayer gamePlayer, int spot) {
+        ArrayList<Button> playerButtons = new ArrayList<>();
+        for(PokerButton pokerButton : PokerButton.values()) {
+            if(pokerButton.getxDisplacement() == 0) continue;
+
+            int rotation = getPokerButtonRotation(spot);
+            int[] loc = getPokerButtonPos(spot);
+
+            transformCords(loc, pokerButton.getxDisplacement(), pokerButton.getyDisplacement(), spot);
+
+            Button b = new Button(this, pokerButton.getImageName(true), loc, rotation, pokerButton.toString());
+            b.changeLocationByRotation();
+            b.setVisibleForAll(false);
+            b.addVisiblePlayer(gamePlayer);
+            b.setClickable(true);
+
+            buttons.add(b);
+            playerButtons.add(b);
+        }
+        return playerButtons;
     }
 
     private void setFlopCards() {
@@ -177,45 +243,66 @@ public class Poker extends Game {
     private int[] getPokerButtonPos(int posCounter) {
         int[] loc = new int[] { 0, 0 };
         if(posCounter > 4) {
-            loc[0] = 128;
-            loc[1] = 256 * (posCounter - 5); // Might want to change to 6 - posCounter to fix rotation
-        } else if(posCounter > 2){
             loc[0] = (128 * 4);
-            loc[1] = 256 * (posCounter - 3) + 128;
-        } else {
-            loc[0] = (256 * posCounter) + 128;
+            loc[1] = 256 * (posCounter - 5) + 128;
+        } else if(posCounter > 1) {
+            loc[0] = (256 * (posCounter - 2)) + 128;
             loc[1] = 128;
+        } else {
+            loc[0] = 128;
+            loc[1] = 256 * (1 - posCounter);
         }
         return loc;
     }
 
     private int getPokerButtonRotation(int posCounter) {
         if(posCounter > 4) {
-            return 1;
-        } else if(posCounter > 2) {
             return 3;
-        } else {
+        } else if(posCounter > 1) {
             return 2;
+        } else {
+            return 1;
         }
     }
 
-    // TODO: Add all-in check
+    private void transformCords(int[] loc, int xDisp, int yDisp, int spot) {
+        if(spot > 4) {
+            loc[0] = loc[0] + yDisp;
+            loc[1] = loc[1] - xDisp;;
+        } else if(spot > 1){
+            loc[0] = loc[0] - xDisp;
+            loc[1] = loc[1] - yDisp;
+        } else  {
+            loc[0] = loc[0] - yDisp;
+            loc[1] = loc[1] + xDisp;
+        }
+    }
+
     private boolean placeBet(GamePlayer gamePlayer, int amount) {
         int playerBalance = (int) instance.getEconomy().getBalance(gamePlayer.getPlayer());
-        boolean allIn = playerBalance < amount;
+        boolean allIn = playerBalance <= amount;
 
         if(amount < currentBet) return false;
 
         // if a player has gone all in, start counting new pot
         // new pot is smallest stack
         if(allIn) {
+            sendGameMessage(gamePlayer.getPlayer().getDisplayName() + " has gone all in!");
+
+            instance.getEconomy().withdrawPlayer(gamePlayer.getPlayer(), playerBalance);
+
             playersAllIn.put(gamePlayer, playerBalance);
             playerBets.remove(gamePlayer);
+
+            this.disablePokerButtons(gamePlayer);
 
             if(playerBalance > currentBet)
                 currentBet = playerBalance;
             return true;
         }
+
+        int withdrawAmount = playerBets.get(gamePlayer) == -1 ? amount : amount - playerBets.get(gamePlayer);
+        instance.getEconomy().withdrawPlayer(gamePlayer.getPlayer(), withdrawAmount);
 
         this.playerBets.put(gamePlayer, amount);
 
@@ -227,10 +314,12 @@ public class Poker extends Game {
         GamePlayer smallBlindPlayer = teamManager.getTurnPlayer();
         GamePlayer bigBlindPlayer = teamManager.nextTurn();
 
-        this.placeBet(smallBlindPlayer, BIG_BLIND/2);
-        this.placeBet(bigBlindPlayer, BIG_BLIND);
+        this.firstBetIndex = teamManager.getGamePlayers().indexOf(smallBlindPlayer);
 
+        this.placeBet(smallBlindPlayer, BIG_BLIND/2);
         this.sendGameMessage(smallBlindPlayer.getPlayer().getDisplayName() + " bet small blind " + BIG_BLIND/2);
+
+        this.placeBet(bigBlindPlayer, BIG_BLIND);
         this.sendGameMessage(bigBlindPlayer.getPlayer().getDisplayName() + " bet big blind " + BIG_BLIND);
 
         this.nextTurn();
@@ -249,9 +338,7 @@ public class Poker extends Game {
     }
 
     private void renderPokerPlayerButtons(GamePlayer gamePlayer) {
-        for(Button button : playerButtons.get(gamePlayer)) {
-            button.getImage().setImage("POKER_" + button.getName() + "_DARK");
-        }
+        this.disablePokerButtons(gamePlayer);
 
         boolean canCheck = playerBets.get(gamePlayer) - currentBet == 0 || currentBet == 0;
 
@@ -271,8 +358,8 @@ public class Poker extends Game {
         this.setPokerButton(playerButtons.get(gamePlayer), "CALL_ANY", true);
     }
 
-    private void nextTurn() {
-        if(playerBets.size() > 1) {
+    protected void nextTurn() {
+        if(playerBets.size() >= 1 && !checkRoundOver()) {
             GamePlayer nextPlayer = teamManager.nextTurn();
 
             if(!playerBets.containsKey(nextPlayer)) {
@@ -286,9 +373,25 @@ public class Poker extends Game {
                 this.playerSelectedButtons.remove(nextPlayer);
                 return;
             }
+
+            pokerTurnTimer.start(nextPlayer.getPlayer());
+        }
+
+        boolean roundOver = checkRoundOver();
+        if(roundOver) {
+            this.startNextRound();
+            return;
         }
 
         this.reRenderPokerButtons();
+    }
+
+    protected void reRenderBoard() {
+        mapManager.renderBoard();
+    }
+
+    protected void lookAtPlayer(Player player) {
+        gameNPC.lookAt(player);
     }
 
     private void setPokerButton(ArrayList<Button> buttons, String buttonName, boolean isToggled) {
@@ -350,10 +453,34 @@ public class Poker extends Game {
     @Override
     public void click(Player player, double[] loc, ItemStack map) {
         GamePlayer gamePlayer = getGamePlayer(player);
+
+        boolean outsideClick = false;
+        if(gamePlayer == null) {
+            gamePlayer = new GamePlayer(player);
+            outsideClick = true;
+        } else if(!spotsTaken.containsKey(gamePlayer)) {
+            outsideClick = true;
+        }
+
         int[] clickLoc = mapManager.getClickLocation(loc, map);
 
         Button b = getClickedButton(gamePlayer, clickLoc);
         if(b == null) return;
+
+        if(outsideClick) {
+            if(b.getName().startsWith("JOIN_GAME")) {
+                String spot = b.getName().substring(b.getName().lastIndexOf('_') + 1);
+                int spotNum = Integer.parseInt(spot);
+
+                if(!spotsTaken.containsValue(spotNum)) {
+                    this.addPokerPlayer(gamePlayer, spotNum);
+                }
+            }
+            return;
+        }
+
+        // Game has not started
+        if(playerBets == null) return;
 
         // If they are out of the round, ignore clicks
         if(!playerBets.containsKey(gamePlayer)) return;
@@ -364,6 +491,31 @@ public class Poker extends Game {
         }
 
         this.playPokerMove(gamePlayer, b.getName());
+    }
+
+    private void addPokerPlayer(GamePlayer player, int spot) {
+        if (instance.getEconomy().getBalance(player.getPlayer()) < this.BIG_BLIND) {
+            player.getPlayer().sendMessage(ConfigUtil.CHAT_GUI_GAME_NO_MONEY_JOIN.toString());
+            return;
+        }
+
+        player.getPlayer().sendMessage("You have joined the Poker game.");
+
+        teamManager.addTeam(player);
+        spotsTaken.put(player, spot);
+
+        renderAvailableSpots();
+
+        setPokerPlayerButtons(player, spot);
+
+        // Start game
+        if(spotsTaken.size() == 2 && playerBets == null) {
+            sendGameMessage("Game starting!");
+
+            prepareNextGame();
+        }
+
+        mapManager.renderBoard();
     }
 
     private void playPokerMove(GamePlayer gamePlayer, String move) {
@@ -402,28 +554,22 @@ public class Poker extends Game {
             }
         }
 
-        boolean roundOver = checkRoundOver();
-        if(roundOver) {
-            this.startNextRound();
-        }
-
         mapManager.renderBoard();
     }
 
     private void handlePokerBet(GamePlayer gamePlayer) {
         Player player = gamePlayer.getPlayer();
-        GameOption betOption = new GameOption("bet", Material.GOLD_INGOT, GameOptionType.COUNT, "Bet Amount:", currentBet + "", false, Math.max(1, currentBet), BET_LIMIT);
+        GameOption betOption = new GameOption("bet", Material.GOLD_INGOT, GameOptionType.COUNT, "Bet Amount:", currentBet + "", false, Math.max(1, currentBet), RAISE_LIMIT + currentBet);
         new GameNumberInventory(gameInventory).build(player, (s, betAmount) -> {
             if(betAmount > currentBet) {
+                int playerBalance = (int) instance.getEconomy().getBalance(gamePlayer.getPlayer());
+                if(betAmount >= playerBalance)
+                    betAmount = playerBalance;
+
                 sendGameMessage(player.getDisplayName() + " has raised the bet to " + betAmount);
 
                 this.placeBet(gamePlayer, betAmount);
                 this.nextTurn();
-
-                boolean roundOver = checkRoundOver();
-                if(roundOver) {
-                    this.startNextRound();
-                }
 
                 mapManager.renderBoard();
             }
@@ -447,9 +593,7 @@ public class Poker extends Game {
         if(!buttonName.equals("CALL_ANY") && !buttonName.equals("CHECK_FOLD")) return;
 
         // Set their buttons to black
-        for(Button button : playerButtons.get(gamePlayer)) {
-            button.getImage().setImage("POKER_" + button.getName() + "_DARK");
-        }
+        this.disablePokerButtons(gamePlayer);
 
         this.setPokerButton(playerButtons.get(gamePlayer), buttonName, "POKER_" + buttonName + "_SELECTED");
 
@@ -465,36 +609,28 @@ public class Poker extends Game {
             this.playerBets.put(gamePlayer, 0);
     }
 
-    private void foldGamePlayer(GamePlayer gamePlayer) {
-        // TODO: Pot stuff
+    protected void foldGamePlayer(GamePlayer gamePlayer) {
         sendGameMessage(gamePlayer.getPlayer().getDisplayName() + " has folded");
+
+        // Add their bet to the pot
+        if(this.playerBets.containsKey(gamePlayer) && this.playerBets.get(gamePlayer) > 0) {
+            gamePot += this.playerBets.get(gamePlayer);
+        }
 
         this.playerBets.remove(gamePlayer);
 
         // Set their buttons to black
+        if(playerButtons != null && playerButtons.containsKey(gamePlayer))
+            this.disablePokerButtons(gamePlayer);
+    }
+
+    private void disablePokerButtons(GamePlayer gamePlayer) {
         for(Button button : playerButtons.get(gamePlayer)) {
             button.getImage().setImage("POKER_" + button.getName() + "_DARK");
         }
     }
 
     private void startNextRound() {
-        // If its the last betting round or everyone has folded
-        if(this.flopCards.getAmountOfCards() == 5 || playerBets.size() <= 1) {
-            // End game
-            sendGameMessage("Game over!");
-            this.endGame();
-            return;
-        }
-
-        // Draw flop card(s)
-        int drawFlopNum = (this.flopCards.getAmountOfCards() == 0) ? 3 : 1;
-        ArrayList<Card> flopCards = this.pokerDeck.draw(drawFlopNum);
-        this.flopCards.addCards(flopCards);
-
-        this.setFlopCards();
-
-        teamManager.setTurn(playerBets.keySet().iterator().next());
-
         if(this.playersAllIn.size() > 0) {
             // Find smallest all in
             ArrayList<Integer> allInBets = new ArrayList<>(this.playersAllIn.values());
@@ -513,13 +649,17 @@ public class Poker extends Game {
             // other side pots
             if(this.playersAllIn.size() > 1) {
                 for(int i = 1; i < this.playersAllIn.size(); i++) {
-                    int bet = allInBets.get(i);
+                    int bet = allInBets.get(i) - allInBets.get(i - 1);
                     int sidePot = bet * ((this.playersAllIn.size() - i) + this.playerBets.size());
                     // can be won by i-playersAllIn.size() + playerBets
 
                     // if everyone went all in and is last side pot, return money (no one can match)
                     if(playerBets.size() == 0 && i == this.playersAllIn.size() - 1) {
-                        // return money bet - allInBets.get(i - 1)
+                        if(bet > 0) {
+                            GamePlayer returnPlayer = getLastElement(this.playersAllIn.keySet());
+                            returnPlayer.getPlayer().sendMessage("You get " + bet + " back!");
+                            instance.getEconomy().depositPlayer(returnPlayer.getPlayer(), bet);
+                        }
                     } else {
                         SidePot newSidePot = new SidePot();
                         newSidePot.addPotPlayers(new ArrayList<>(this.playerBets.keySet()));
@@ -533,10 +673,9 @@ public class Poker extends Game {
                 }
             }
 
-            // TODO: set game pot to this, find hand
             // new side pot with playerBets (becomes new game pot)
-            // currentBet - allInBets.get(i - 1)
-            gamePot = currentBet - allInBets.get(allInBets.size() - 1);
+            gamePot = (currentBet - allInBets.get(allInBets.size() - 1)) * this.playerBets.size();
+            this.playersAllIn.clear();
         } else {
             int roundPot = 0;
             for(int bet : this.playerBets.values()) {
@@ -546,12 +685,25 @@ public class Poker extends Game {
 
             this.gamePot += roundPot;
         }
-        // If players goes all in
-            // starting at smallest pot
-            // gamePot += minPot * players (75)
-        // check for other in bets
-            // return money
-        // Side pot = (playerBets + all in) - (minPot * players)
+
+        // If its the last betting round or everyone has folded
+        if((this.flopCards.getAmountOfCards() == 5 || playerBets.size() <= 1)) {
+            // End game
+            this.endRound(false);
+            return;
+        }
+
+        // Draw flop card(s)
+        int drawFlopNum = (this.flopCards.getAmountOfCards() == 0) ? 3 : 1;
+        ArrayList<Card> flopCards = this.pokerDeck.draw(drawFlopNum);
+        this.flopCards.addCards(flopCards);
+
+        this.setFlopCards();
+
+        // Find player
+        GamePlayer startingPlayer = getStartingPlayer();
+        teamManager.setTurn(startingPlayer);
+        pokerTurnTimer.start(startingPlayer.getPlayer());
 
         this.currentBet = 0;
         this.playerBets.replaceAll((p, v) -> -1);
@@ -559,13 +711,28 @@ public class Poker extends Game {
         this.reRenderPokerButtons();
 
         sendGameMessage("Next round starting! Pot: " + gamePot);
+        for(SidePot sidePot : this.sidePots) {
+            sendGameMessage("Side pot: " + sidePot.getPotAmount() + " Players: " + sidePot.getPotPlayers().size());
+        }
         sendGameMessage("Flop:");
         for(Card card : this.flopCards.getCards()) {
             sendGameMessage(card.getValue() + "" + card.getSuit().toString());
         }
     }
 
-    private void endGame() {
+    private GamePlayer getStartingPlayer() {
+        int playerIndex = firstBetIndex >= teamManager.getGamePlayers().size() ? 0 : firstBetIndex;
+        while (!playerBets.containsKey(teamManager.getGamePlayers().get(playerIndex))) {
+            playerIndex++;
+            if(playerIndex >= teamManager.getGamePlayers().size())
+                playerIndex = 0;
+        }
+        return teamManager.getGamePlayers().get(playerIndex);
+    }
+
+    private void endRound(boolean endGame) {
+        sendGameMessage("Game over!");
+
         // Draw the remaining flop cards
         for(int i = this.flopCards.getAmountOfCards(); i < 5; i++) {
             Card flopCard = this.pokerDeck.draw();
@@ -574,37 +741,85 @@ public class Poker extends Game {
 
         this.setFlopCards();
 
-        // Get best hand
-        GamePlayer winner = playerBets.keySet().iterator().next();
+        HashMap<GamePlayer, Integer> finalPlayers = new HashMap<>();
 
-        if(playerBets.size() > 1) {
-            ArrayList<Hand> inGameHands = new ArrayList<>();
-            for(GamePlayer inGamePlayer : playerBets.keySet()) {
-                inGameHands.add(playerHands.get(inGamePlayer));
-            }
-
-            Hand bestHand = Hand.getBestHand(inGameHands, flopCards.getCards());
-            for(GamePlayer inGamePlayer : playerBets.keySet()) {
-                Hand playerHand = playerHands.get(inGamePlayer);
-                if(bestHand.equals(playerHand)) {
-                    winner = inGamePlayer;
-                    break;
-                }
-            }
+        // Only playerBets can win gamePot
+        if(playerBets.size() > 0) {
+            GamePlayer winner = getBestHand(new ArrayList<>(playerBets.keySet()));
+            sendGameMessage(winner.getPlayer().getDisplayName() + " won the pot worth " + gamePot);
+            finalPlayers.put(winner, gamePot);
         }
 
-        // Show everyones cards
-        for(GamePlayer inGamePlayer : playerBets.keySet()) {
+        for(SidePot sidePot : this.sidePots) {
+            GamePlayer winner = getBestHand(sidePot.getPotPlayers());
+            sendGameMessage(winner.getPlayer().getDisplayName() + " won a side pot worth " + sidePot.getPotAmount());
+            finalPlayers.put(winner, sidePot.getPotAmount());
+        }
+
+        // Show winning cards / Send money to players
+        for(GamePlayer inGamePlayer : finalPlayers.keySet()) {
             playerHandButtons.get(inGamePlayer).setVisibleForAll(true);
+            instance.getEconomy().depositPlayer(inGamePlayer.getPlayer(), finalPlayers.get(inGamePlayer));
         }
 
         mapManager.renderBoard();
 
-        super.endGame(winner);
+        if(!endGame) {
+            sendGameMessage("Starting next game...");
+
+            prepareNextGame();
+        }
+    }
+
+    private void prepareNextGame() {
+        playerBets = null;
+
+        if (pokerTimer != null)
+            pokerTimer.cancel();
+
+        if(pokerTurnTimer != null)
+            pokerTurnTimer.cancel();
+
+        pokerTimer = new PokerGameTimer(this);
+        pokerTimer.runTaskTimer(BoardGames.getInstance(), 5, 5);
+    }
+
+    private boolean canStartNextGame() {
+        // Make sure players still have enough money
+        for(GamePlayer gamePlayer : teamManager.getGamePlayers()) {
+            double playerBalance = instance.getEconomy().getBalance(gamePlayer.getPlayer());
+            if(playerBalance < this.BIG_BLIND) {
+                sendGameMessage(gamePlayer.getPlayer().getDisplayName() + " has been removed for not having enough money.");
+                teamManager.removeTeamByPlayer(gamePlayer.getPlayer());
+            }
+        }
+
+        if(teamManager.getGamePlayers().size() <= 1) {
+            sendGameMessage("Not enough players to start next game.");
+            resetGame();
+            return false;
+        }
+
+        // Open up spots
+        spotsTaken.keySet().removeIf(gamePlayer -> !teamManager.getGamePlayers().contains(gamePlayer));
+
+        int playerIndex = firstBetIndex + 1 >= teamManager.getGamePlayers().size() ? 0 : firstBetIndex + 1;
+        teamManager.setTurn(teamManager.getGamePlayers().get(playerIndex));
+
+        if (pokerTurnTimer != null)
+            pokerTurnTimer.cancel();
+
+        pokerTurnTimer = new PokerTurnTimer(this);
+        pokerTurnTimer.runTaskTimer(BoardGames.getInstance(), 5, 5);
+        return true;
     }
 
     private boolean checkRoundOver() {
-        if(playerBets.size() <= 1) return true;
+        // Everyone has folded
+        if(playerBets.size() <= 1 && this.playersAllIn.size() == 0) return true;
+
+        // Everyone has gone all in
+        if(playerBets.size() == 0) return true;
 
         boolean roundOver = true;
         for(int playerBet : playerBets.values()) {
@@ -617,6 +832,87 @@ public class Poker extends Game {
         return roundOver;
     }
 
+    private GamePlayer getBestHand(ArrayList<GamePlayer> gamePlayers) {
+        HashMap<Hand, GamePlayer> potHands = new HashMap<>();
+        for(GamePlayer sidePotPlayer : gamePlayers) {
+            potHands.put(playerHands.get(sidePotPlayer), sidePotPlayer);
+        }
+
+        Hand bestHand = Hand.getBestHand(new ArrayList<>(potHands.keySet()), flopCards.getCards());
+        return potHands.get(bestHand);
+    }
+
+    @Override
+    public void exitPlayer(Player player) {
+        // Game has not "started"
+        if(playerBets == null && spotsTaken.size() <= 2) {
+            sendGameMessage("Not enough players to start the game.");
+
+            // Reset the board
+            resetGame();
+            return;
+        }
+
+        // Render in available spots
+        spotsTaken.remove(teamManager.getGamePlayer(player));
+        this.renderAvailableSpots();
+
+        if(playerBets != null)
+            this.foldGamePlayer(teamManager.getGamePlayer(player));
+
+        super.exitPlayer(player);
+
+        if (!this.isIngame()) {
+            return;
+        }
+
+        if(playerBets == null) {
+            mapManager.renderBoard();
+            return;
+        }
+
+        boolean roundOver = checkRoundOver();
+        if(roundOver) {
+            this.startNextRound();
+            return;
+        }
+
+        while (!playerBets.containsKey(teamManager.getTurnPlayer())) {
+            teamManager.nextTurn();
+        }
+
+        this.reRenderPokerButtons();
+
+        mapManager.renderBoard();
+    }
+
+    @Override
+    public void endGame(GamePlayer gamePlayer) {
+        this.endRound(true);
+
+        resetGame();
+    }
+
+
+    private void resetGame() {
+        // Remove join buttons, game over
+        buttons.removeIf(button -> button.getName().startsWith("JOIN_GAME"));
+
+        gameNPC.removeNPC();
+
+        if (pokerTimer != null)
+            pokerTimer.cancel();
+
+        if (pokerTurnTimer != null)
+            pokerTurnTimer.cancel();
+
+        playerBets = null;
+        clearGamePlayers();
+        super.endGame(null);
+
+        mapManager.renderBoard();
+    }
+
     @Override
     protected void gamePlayerOutOfTime(GamePlayer gamePlayer) {
 
@@ -625,5 +921,25 @@ public class Poker extends Game {
     @Override
     public ItemStack getBoardItem() {
         return new BoardItem(gameName, new ItemStack(Material.ACACIA_TRAPDOOR, 1));
+    }
+
+    @Override
+    public boolean allowOutsideClicks() {
+        return true;
+    }
+
+    private <T> T getLastElement(final Iterable<T> elements) {
+        T lastElement = null;
+
+        for (T element : elements) {
+            lastElement = element;
+        }
+
+        return lastElement;
+    }
+
+    @Override
+    public GameNPC getGameNPC() {
+        return new PokerNPC(new double[] { -0.5, -1, 1.5 });
     }
 }
