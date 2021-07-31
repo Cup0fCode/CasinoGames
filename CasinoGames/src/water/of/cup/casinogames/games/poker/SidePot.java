@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class SidePot {
 
     private int potAmount;
-    private ArrayList<GamePlayer> potPlayers;
+    private final ArrayList<GamePlayer> potPlayers;
 
     public SidePot() {
         this.potPlayers = new ArrayList<>();
@@ -24,5 +24,13 @@ public class SidePot {
 
     public void setPotAmount(int potAmount) {
         this.potAmount = potAmount;
+    }
+
+    public int getPotAmount() {
+        return potAmount;
+    }
+
+    public ArrayList<GamePlayer> getPotPlayers() {
+        return new ArrayList<>(potPlayers);
     }
 }
