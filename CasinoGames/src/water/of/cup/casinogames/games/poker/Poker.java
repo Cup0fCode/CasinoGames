@@ -940,6 +940,6 @@ public class Poker extends Game {
 
     @Override
     public GameNPC getGameNPC() {
-        return new PokerNPC(new double[] { -0.5, 0, 1.5 });
+        return new PokerNPC(new double[] { -0.5, -1, 1.5 });
     }
 }
