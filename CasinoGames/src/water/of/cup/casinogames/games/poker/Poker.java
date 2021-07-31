@@ -124,6 +124,8 @@ public class Poker extends Game {
         // show player avail spots, keep track of spots taken
         this.renderAvailableSpots();
 
+        gameNPC.spawnNPC();
+
         mapManager.renderBoard();
     }
 
@@ -241,38 +243,38 @@ public class Poker extends Game {
     private int[] getPokerButtonPos(int posCounter) {
         int[] loc = new int[] { 0, 0 };
         if(posCounter > 4) {
-            loc[0] = 128;
-            loc[1] = 256 * (6 - posCounter); // Might want to change to 6 - posCounter to fix rotation
-        } else if(posCounter > 2){
             loc[0] = (128 * 4);
-            loc[1] = 256 * (posCounter - 3) + 128;
-        } else {
-            loc[0] = (256 * posCounter) + 128;
+            loc[1] = 256 * (posCounter - 5) + 128;
+        } else if(posCounter > 1) {
+            loc[0] = (256 * (posCounter - 2)) + 128;
             loc[1] = 128;
+        } else {
+            loc[0] = 128;
+            loc[1] = 256 * (1 - posCounter);
         }
         return loc;
     }
 
     private int getPokerButtonRotation(int posCounter) {
         if(posCounter > 4) {
-            return 1;
-        } else if(posCounter > 2) {
             return 3;
-        } else {
+        } else if(posCounter > 1) {
             return 2;
+        } else {
+            return 1;
         }
     }
 
     private void transformCords(int[] loc, int xDisp, int yDisp, int spot) {
         if(spot > 4) {
-            loc[0] = loc[0] - yDisp;
-            loc[1] = loc[1] + xDisp;
-        } else if(spot > 2){
             loc[0] = loc[0] + yDisp;
             loc[1] = loc[1] - xDisp;;
-        } else  {
+        } else if(spot > 1){
             loc[0] = loc[0] - xDisp;
             loc[1] = loc[1] - yDisp;
+        } else  {
+            loc[0] = loc[0] - yDisp;
+            loc[1] = loc[1] + xDisp;
         }
     }
 
@@ -357,7 +359,7 @@ public class Poker extends Game {
     }
 
     protected void nextTurn() {
-        if(playerBets.size() >= 1) {
+        if(playerBets.size() >= 1 && !checkRoundOver()) {
             GamePlayer nextPlayer = teamManager.nextTurn();
 
             if(!playerBets.containsKey(nextPlayer)) {
@@ -780,8 +782,6 @@ public class Poker extends Game {
 
         pokerTimer = new PokerGameTimer(this);
         pokerTimer.runTaskTimer(BoardGames.getInstance(), 5, 5);
-
-        gameNPC.spawnNPC();
     }
 
     private boolean canStartNextGame() {
