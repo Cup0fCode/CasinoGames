@@ -124,7 +124,7 @@ public class Poker extends Game {
         // show player avail spots, keep track of spots taken
         this.renderAvailableSpots();
 
-        gameNPC.spawnNPC();
+        spawnNPC();
 
         mapManager.renderBoard();
     }
@@ -391,7 +391,7 @@ public class Poker extends Game {
     }
 
     protected void lookAtPlayer(Player player) {
-        gameNPC.lookAt(player);
+        npcLookAt(player);
     }
 
     private void setPokerButton(ArrayList<Button> buttons, String buttonName, boolean isToggled) {
@@ -898,8 +898,6 @@ public class Poker extends Game {
         // Remove join buttons, game over
         buttons.removeIf(button -> button.getName().startsWith("JOIN_GAME"));
 
-        gameNPC.removeNPC();
-
         if (pokerTimer != null)
             pokerTimer.cancel();
 
@@ -940,6 +938,6 @@ public class Poker extends Game {
 
     @Override
     public GameNPC getGameNPC() {
-        return new PokerNPC(new double[] { -0.5, -1, 1.5 });
+        return new PokerNPC(new double[] { 0.5, -1, 1.5 });
     }
 }
