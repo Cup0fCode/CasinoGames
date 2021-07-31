@@ -19,11 +19,13 @@ import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.inventories.GameOption;
 import water.of.cup.boardgames.game.inventories.GameOptionType;
 import water.of.cup.boardgames.game.inventories.number.GameNumberInventory;
+import water.of.cup.boardgames.game.npcs.GameNPC;
 import water.of.cup.boardgames.game.storage.GameStorage;
 import water.of.cup.casinogames.games.gameutils.EconomyUtils;
 import water.of.cup.casinogames.games.gameutils.cards.Card;
 import water.of.cup.casinogames.games.gameutils.cards.Deck;
 import water.of.cup.casinogames.games.gameutils.cards.Hand;
+import water.of.cup.casinogames.games.poker.PokerNPC;
 
 public class Blackjack extends Game {
 	boolean inRound;
@@ -243,7 +245,7 @@ public class Blackjack extends Game {
 	@Override
 	protected void startGame() {
 		clearGamePlayers();
-
+		spawnNPC();
 		super.setInGame();
 		this.prepareNextRound();
 	}
@@ -263,10 +265,10 @@ public class Blackjack extends Game {
 		for (GamePlayer player : teamManager.getGamePlayers())
 			player.getPlayer().sendMessage("Dealer: " + message);
 	}
-	
+
 	private void takeBets() {
 		for (GamePlayer gamePlayer : teamManager.getGamePlayers()) {
-			//askForBet(gamePlayer);
+			// askForBet(gamePlayer);
 			dealerSendMessage(gamePlayer.getPlayer(), "Click the table to place your next bet.");
 		}
 	}
@@ -345,7 +347,7 @@ public class Blackjack extends Game {
 			doubledPlayerHands[n].add(false);
 		}
 		dealerHand.draw(deck, 2);
-		String dealerCardName = dealerHand.getCards().get(0).getShortName(); 
+		String dealerCardName = dealerHand.getCards().get(0).getShortName();
 		dealerSendAll("I drew a" + (dealerCardName.charAt(0) == 'A' ? "n " : " ") + dealerCardName + ".");
 	}
 
@@ -369,8 +371,8 @@ public class Blackjack extends Game {
 			GameImage cardImage = card.getGameImage();
 			cardImage.resize(2);
 
-			Button cardButton = new Button(this, cardImage, new int[] { cardLoc[0] + x, cardLoc[1] + y },
-					rotation, "dealercard");
+			Button cardButton = new Button(this, cardImage, new int[] { cardLoc[0] + x, cardLoc[1] + y }, rotation,
+					"dealercard");
 			cardButton.setVisibleForAll(true);
 			cardButton.changeLocationByRotation();
 			dealerCardButtons.add(cardButton);
@@ -599,6 +601,7 @@ public class Blackjack extends Game {
 			this.dealerSendMessage(n, "It is now your turn.");
 			turnTimer.start(gamePlayerAtLocation[n].getPlayer());
 			mapManager.renderBoard();
+			npcLookAt(gamePlayerAtLocation[n].getPlayer());
 		} else {
 			currentHandButton.setVisibleForAll(false);
 			completeDealersTurn();
@@ -648,12 +651,12 @@ public class Blackjack extends Game {
 	}
 
 	private void completeDealersTurn() {
-		String dealerCardName = dealerHand.getCards().get(1).getShortName(); 
+		String dealerCardName = dealerHand.getCards().get(1).getShortName();
 		dealerSendAll("I flipped a" + (dealerCardName.charAt(0) == 'A' ? "n " : " ") + dealerCardName + ".");
-		
+
 		while (dealerHand.getHandBlackJackTotal() < 17) {
 			dealerHand.draw(deck);
-			dealerCardName = dealerHand.getCards().get(dealerHand.getAmountOfCards() - 1).getShortName(); 
+			dealerCardName = dealerHand.getCards().get(dealerHand.getAmountOfCards() - 1).getShortName();
 			dealerSendAll("I drew a" + (dealerCardName.charAt(0) == 'A' ? "n " : " ") + dealerCardName + ".");
 		}
 		int dealerScore = dealerHand.getHandBlackJackTotal();
@@ -839,6 +842,9 @@ public class Blackjack extends Game {
 			toggleActionButtons();
 
 		this.toggleJoinButtons();
+		if (this.getAmountOfBets() == 0)
+			this.endGame(null);
+		
 		mapManager.renderBoard();
 	}
 
@@ -868,6 +874,11 @@ public class Blackjack extends Game {
 			if (b > 0)
 				bets++;
 		return bets;
+	}
+	
+	@Override
+	public GameNPC getGameNPC() {
+		return new BlackjackNPC(new double[] { 0.5, -1, 1.5 });
 	}
 
 }
