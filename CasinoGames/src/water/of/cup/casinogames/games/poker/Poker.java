@@ -716,7 +716,7 @@ public class Poker extends Game {
         }
         sendGameMessage("Flop:");
         for(Card card : this.flopCards.getCards()) {
-            sendGameMessage(card.getValue() + "" + card.getSuit().toString());
+            sendGameMessage(card.getName());
         }
     }
 
