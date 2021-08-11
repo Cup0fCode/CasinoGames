@@ -25,7 +25,7 @@ public class Poker extends Game {
     private HashMap<GamePlayer, ArrayList<Button>> playerButtons;
     private HashMap<GamePlayer, Button> playerSelectedButtons;
     private LinkedHashMap<GamePlayer, Integer> playerBets;
-    private ArrayList<Button> flopButtons;
+    private Button flopButton;
     private HashMap<GamePlayer, Button> playerHandButtons;
     private LinkedHashMap<GamePlayer, Integer> playersAllIn;
     private ArrayList<SidePot> sidePots;
@@ -42,7 +42,7 @@ public class Poker extends Game {
     private static final int AMOUNT_OF_DECKS = 1;
     private final BoardGames instance = BoardGames.getInstance();
 
-    // TODO: player NPC loc, poker chips, translate messages
+    // TODO: poker chips, translate messages
     public Poker(int rotation) {
         super(rotation);
     }
@@ -156,6 +156,7 @@ public class Poker extends Game {
         this.sidePots = new ArrayList<>();
         this.currentBet = 0;
         this.gamePot = 0;
+        this.flopButton = null;
 
         for(GamePlayer gamePlayer : teamManager.getGamePlayers()) {
             ArrayList<Card> cards = this.pokerDeck.draw(2);
@@ -219,25 +220,20 @@ public class Poker extends Game {
     }
 
     private void setFlopCards() {
-        int[][] flopCords = new int[][] {
-                { 128 * 3, 128 * 2, 2 },
-                { 128 * 2, 128, 1 },
-                { 128 * 3, 128 * 2, 3 }
-        };
+        int[] flopCord = new int[] { 128 * 3 + 64, 128 * 2 + 64};
 
-        if(this.flopButtons != null) {
-            buttons.removeAll(this.flopButtons);
+        GameImage flopImage = flopCards.getGameImage(false);
+        flopImage.resize(2);
+        flopImage.setRotation(2);
+
+        if(this.flopButton == null) {
+            this.flopButton = new Button(this, flopImage, flopCord, 2, "FLOP");
+            this.flopButton.changeLocationByRotation();
+            buttons.add(this.flopButton);
+            return;
         }
 
-        this.flopButtons = new ArrayList<>();
-
-        GameImage flopImage = flopCards.getGameImage(true);
-        for(int[] flopCord : flopCords) {
-            Button b = new Button(this, flopImage, flopCord, flopCord[2], "FLOP");
-            b.changeLocationByRotation();
-            this.flopButtons.add(b);
-            buttons.add(b);
-        }
+        this.flopButton.setImage(flopImage);
     }
 
     private int[] getPokerButtonPos(int posCounter) {
