@@ -28,15 +28,18 @@ public class Roulette extends Game {
 	public Roulette(int rotation) {
 		super(rotation);
 		spinner = new RouletteSpinner(this);
-		spinnerButton = new Button(this, spinner.getGameImage(), new int[] { 0, 128 }, 0, "spinner");
+		spinnerButton = new Button(this, spinner.getGameImage(), new int[] { 0, 256 }, 0, "spinner");
 		buttons.add(spinnerButton);
+		Button betsButton = new Button(this, "ROULETTE_BETS", new int[] { 0, 0 }, 2, "bets");
+		buttons.add(betsButton);
+		
 		spinning = false;
 		spinnerVal = 0;
 	}
 
 	@Override
 	protected void setMapInformation(int rotation) {
-		this.mapStructure = new int[][] { { 5, 6 }, { 3, 4 }, { 1, 2 } };
+		this.mapStructure = new int[][] { {7, 8}, { 5, 6 }, { 3, 4 }, { 1, 2 } };
 		this.placedMapVal = 1;
 
 	}
@@ -44,6 +47,7 @@ public class Roulette extends Game {
 	@Override
 	public void startGame() {
 		super.startGame();
+		this.setInGame();
 	}
 
 	@Override
