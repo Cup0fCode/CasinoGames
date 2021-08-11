@@ -11,6 +11,7 @@ import water.of.cup.casinogames.games.hilo.HiLo;
 import water.of.cup.casinogames.games.mines.Mines;
 import water.of.cup.casinogames.games.plinko.Plinko;
 import water.of.cup.casinogames.games.poker.Poker;
+import water.of.cup.casinogames.games.roulette.Roulette;
 import water.of.cup.casinogames.games.slots.slotsgames.LibertyBell;
 import water.of.cup.casinogames.games.slots.slotsgames.MoneyHoney;
 
@@ -26,6 +27,7 @@ public class CasinoGames extends BoardGamesExtension {
 		games.add(HiLo.class);
 		games.add(Plinko.class);
 		games.add(Blackjack.class);
+		games.add(Roulette.class);
 		return games;
 	}
 
