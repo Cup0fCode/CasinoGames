@@ -4,7 +4,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import water.of.cup.boardgames.BoardGames;
-import water.of.cup.boardgames.config.ConfigUtil;
 import water.of.cup.boardgames.game.*;
 import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.inventories.GameOption;
@@ -12,6 +11,7 @@ import water.of.cup.boardgames.game.inventories.GameOptionType;
 import water.of.cup.boardgames.game.inventories.number.GameNumberInventory;
 import water.of.cup.boardgames.game.npcs.GameNPC;
 import water.of.cup.boardgames.game.storage.GameStorage;
+import water.of.cup.casinogames.config.ConfigUtil;
 import water.of.cup.casinogames.games.gameutils.cards.Card;
 import water.of.cup.casinogames.games.gameutils.cards.Deck;
 import water.of.cup.casinogames.games.gameutils.cards.Hand;
@@ -25,7 +25,7 @@ public class Poker extends Game {
     private HashMap<GamePlayer, ArrayList<Button>> playerButtons;
     private HashMap<GamePlayer, Button> playerSelectedButtons;
     private LinkedHashMap<GamePlayer, Integer> playerBets;
-    private ArrayList<Button> flopButtons;
+    private Button flopButton;
     private HashMap<GamePlayer, Button> playerHandButtons;
     private LinkedHashMap<GamePlayer, Integer> playersAllIn;
     private ArrayList<SidePot> sidePots;
@@ -42,7 +42,7 @@ public class Poker extends Game {
     private static final int AMOUNT_OF_DECKS = 1;
     private final BoardGames instance = BoardGames.getInstance();
 
-    // TODO: player NPC loc, poker chips, translate messages
+    // TODO: poker chips, translate messages
     public Poker(int rotation) {
         super(rotation);
     }
@@ -156,6 +156,7 @@ public class Poker extends Game {
         this.sidePots = new ArrayList<>();
         this.currentBet = 0;
         this.gamePot = 0;
+        this.flopButton = null;
 
         for(GamePlayer gamePlayer : teamManager.getGamePlayers()) {
             ArrayList<Card> cards = this.pokerDeck.draw(2);
@@ -219,25 +220,20 @@ public class Poker extends Game {
     }
 
     private void setFlopCards() {
-        int[][] flopCords = new int[][] {
-                { 128 * 3, 128 * 2, 2 },
-                { 128 * 2, 128, 1 },
-                { 128 * 3, 128 * 2, 3 }
-        };
+        int[] flopCord = new int[] { 128 * 3 + 64, 128 * 2 + 64};
 
-        if(this.flopButtons != null) {
-            buttons.removeAll(this.flopButtons);
+        GameImage flopImage = flopCards.getGameImage(false);
+        flopImage.resize(2);
+        flopImage.setRotation(2);
+
+        if(this.flopButton == null) {
+            this.flopButton = new Button(this, flopImage, flopCord, 2, "FLOP");
+            this.flopButton.changeLocationByRotation();
+            buttons.add(this.flopButton);
+            return;
         }
 
-        this.flopButtons = new ArrayList<>();
-
-        GameImage flopImage = flopCards.getGameImage(true);
-        for(int[] flopCord : flopCords) {
-            Button b = new Button(this, flopImage, flopCord, flopCord[2], "FLOP");
-            b.changeLocationByRotation();
-            this.flopButtons.add(b);
-            buttons.add(b);
-        }
+        this.flopButton.setImage(flopImage);
     }
 
     private int[] getPokerButtonPos(int posCounter) {
@@ -287,7 +283,7 @@ public class Poker extends Game {
         // if a player has gone all in, start counting new pot
         // new pot is smallest stack
         if(allIn) {
-            sendGameMessage(gamePlayer.getPlayer().getDisplayName() + " has gone all in!");
+            sendGameMessage(ConfigUtil.CHAT_POKER_ALL_IN.buildString(gamePlayer.getPlayer().getDisplayName()));
 
             instance.getEconomy().withdrawPlayer(gamePlayer.getPlayer(), playerBalance);
 
@@ -317,10 +313,10 @@ public class Poker extends Game {
         this.firstBetIndex = teamManager.getGamePlayers().indexOf(smallBlindPlayer);
 
         this.placeBet(smallBlindPlayer, BIG_BLIND/2);
-        this.sendGameMessage(smallBlindPlayer.getPlayer().getDisplayName() + " bet small blind " + BIG_BLIND/2);
+        this.sendGameMessage(ConfigUtil.CHAT_POKER_BET_SMALL_BLIND.buildString(smallBlindPlayer.getPlayer().getDisplayName(), BIG_BLIND/2));
 
         this.placeBet(bigBlindPlayer, BIG_BLIND);
-        this.sendGameMessage(bigBlindPlayer.getPlayer().getDisplayName() + " bet big blind " + BIG_BLIND);
+        this.sendGameMessage(ConfigUtil.CHAT_POKER_BET_SMALL_BLIND.buildString(bigBlindPlayer.getPlayer().getDisplayName(), BIG_BLIND));
 
         this.nextTurn();
     }
@@ -495,11 +491,11 @@ public class Poker extends Game {
 
     private void addPokerPlayer(GamePlayer player, int spot) {
         if (instance.getEconomy().getBalance(player.getPlayer()) < this.BIG_BLIND) {
-            player.getPlayer().sendMessage(ConfigUtil.CHAT_GUI_GAME_NO_MONEY_JOIN.toString());
+            player.getPlayer().sendMessage(ConfigUtil.CHAT_POKER_JOIN.toString());
             return;
         }
 
-        player.getPlayer().sendMessage("You have joined the Poker game.");
+        player.getPlayer().sendMessage(ConfigUtil.CHAT_POKER_JOIN.toString());
 
         teamManager.addTeam(player);
         spotsTaken.put(player, spot);
@@ -510,7 +506,7 @@ public class Poker extends Game {
 
         // Start game
         if(spotsTaken.size() == 2 && playerBets == null) {
-            sendGameMessage("Game starting!");
+            sendGameMessage(ConfigUtil.CHAT_POKER_GAME_STARTING.toString());
 
             prepareNextGame();
         }
@@ -528,7 +524,7 @@ public class Poker extends Game {
             case "CALL_ANY":
             case "CALL": {
                 if(currentBet > 0) {
-                    sendGameMessage(player.getDisplayName() + " has called " + currentBet);
+                    sendGameMessage(ConfigUtil.CHAT_POKER_PLAYER_CALL.buildString(player.getDisplayName(), currentBet));
 
                     this.placeBet(gamePlayer, currentBet);
                 } else {
@@ -559,14 +555,14 @@ public class Poker extends Game {
 
     private void handlePokerBet(GamePlayer gamePlayer) {
         Player player = gamePlayer.getPlayer();
-        GameOption betOption = new GameOption("bet", Material.GOLD_INGOT, GameOptionType.COUNT, "Bet Amount:", currentBet + "", false, Math.max(1, currentBet), RAISE_LIMIT + currentBet);
+        GameOption betOption = new GameOption("bet", Material.GOLD_INGOT, GameOptionType.COUNT, ConfigUtil.GUI_BET_AMOUNT_LABEL.toString(), currentBet + "", false, Math.max(1, currentBet), RAISE_LIMIT + currentBet);
         new GameNumberInventory(gameInventory).build(player, (s, betAmount) -> {
             if(betAmount > currentBet) {
                 int playerBalance = (int) instance.getEconomy().getBalance(gamePlayer.getPlayer());
                 if(betAmount >= playerBalance)
                     betAmount = playerBalance;
 
-                sendGameMessage(player.getDisplayName() + " has raised the bet to " + betAmount);
+                sendGameMessage(ConfigUtil.CHAT_POKER_PLAYER_RAISE.buildString(player.getDisplayName(), betAmount));
 
                 this.placeBet(gamePlayer, betAmount);
                 this.nextTurn();
@@ -603,14 +599,14 @@ public class Poker extends Game {
     }
 
     private void checkGamePlayer(GamePlayer gamePlayer) {
-        sendGameMessage(gamePlayer.getPlayer().getDisplayName() + " has checked");
+        sendGameMessage(ConfigUtil.CHAT_POKER_PLAYER_CHECK.buildString(gamePlayer.getPlayer().getDisplayName()));
 
         if(this.playerBets.get(gamePlayer) < 0)
             this.playerBets.put(gamePlayer, 0);
     }
 
     protected void foldGamePlayer(GamePlayer gamePlayer) {
-        sendGameMessage(gamePlayer.getPlayer().getDisplayName() + " has folded");
+        sendGameMessage(ConfigUtil.CHAT_POKER_PLAYER_FOLD.buildString(gamePlayer.getPlayer().getDisplayName()));
 
         // Add their bet to the pot
         if(this.playerBets.containsKey(gamePlayer) && this.playerBets.get(gamePlayer) > 0) {
@@ -657,7 +653,7 @@ public class Poker extends Game {
                     if(playerBets.size() == 0 && i == this.playersAllIn.size() - 1) {
                         if(bet > 0) {
                             GamePlayer returnPlayer = getLastElement(this.playersAllIn.keySet());
-                            returnPlayer.getPlayer().sendMessage("You get " + bet + " back!");
+                            returnPlayer.getPlayer().sendMessage(ConfigUtil.CHAT_POKER_MONEY_BACK.buildString(bet + ""));
                             instance.getEconomy().depositPlayer(returnPlayer.getPlayer(), bet);
                         }
                     } else {
@@ -710,11 +706,11 @@ public class Poker extends Game {
         this.playerSelectedButtons.clear();
         this.reRenderPokerButtons();
 
-        sendGameMessage("Next round starting! Pot: " + gamePot);
+        sendGameMessage(ConfigUtil.CHAT_POKER_NEXT_ROUND.buildString(gamePot + ""));
         for(SidePot sidePot : this.sidePots) {
-            sendGameMessage("Side pot: " + sidePot.getPotAmount() + " Players: " + sidePot.getPotPlayers().size());
+            sendGameMessage(ConfigUtil.CHAT_POKER_SIDE_POT.buildString(sidePot.getPotAmount(),  sidePot.getPotPlayers().size()));
         }
-        sendGameMessage("Flop:");
+        sendGameMessage(ConfigUtil.CHAT_POKER_FLOP.toString());
         for(Card card : this.flopCards.getCards()) {
             sendGameMessage(card.getName());
         }
@@ -731,7 +727,7 @@ public class Poker extends Game {
     }
 
     private void endRound(boolean endGame) {
-        sendGameMessage("Game over!");
+        sendGameMessage(ConfigUtil.CHAT_POKER_GAME_OVER.toString());
 
         // Draw the remaining flop cards
         for(int i = this.flopCards.getAmountOfCards(); i < 5; i++) {
@@ -746,13 +742,13 @@ public class Poker extends Game {
         // Only playerBets can win gamePot
         if(playerBets.size() > 0) {
             GamePlayer winner = getBestHand(new ArrayList<>(playerBets.keySet()));
-            sendGameMessage(winner.getPlayer().getDisplayName() + " won the pot worth " + gamePot);
+            sendGameMessage(ConfigUtil.CHAT_POKER_WIN_POT.buildString(winner.getPlayer().getDisplayName(), gamePot));
             finalPlayers.put(winner, gamePot);
         }
 
         for(SidePot sidePot : this.sidePots) {
             GamePlayer winner = getBestHand(sidePot.getPotPlayers());
-            sendGameMessage(winner.getPlayer().getDisplayName() + " won a side pot worth " + sidePot.getPotAmount());
+            sendGameMessage(ConfigUtil.CHAT_POKER_WIN_POT.buildString(winner.getPlayer().getDisplayName(), sidePot.getPotAmount()));
             finalPlayers.put(winner, sidePot.getPotAmount());
         }
 
@@ -765,7 +761,7 @@ public class Poker extends Game {
         mapManager.renderBoard();
 
         if(!endGame) {
-            sendGameMessage("Starting next game...");
+            sendGameMessage(ConfigUtil.CHAT_POKER_NEXT_GAME.toString());
 
             prepareNextGame();
         }
@@ -789,13 +785,13 @@ public class Poker extends Game {
         for(GamePlayer gamePlayer : teamManager.getGamePlayers()) {
             double playerBalance = instance.getEconomy().getBalance(gamePlayer.getPlayer());
             if(playerBalance < this.BIG_BLIND) {
-                sendGameMessage(gamePlayer.getPlayer().getDisplayName() + " has been removed for not having enough money.");
+                sendGameMessage(ConfigUtil.CHAT_POKER_PLAYER_REMOVE.buildString(gamePlayer.getPlayer().getDisplayName()));
                 teamManager.removeTeamByPlayer(gamePlayer.getPlayer());
             }
         }
 
         if(teamManager.getGamePlayers().size() <= 1) {
-            sendGameMessage("Not enough players to start next game.");
+            sendGameMessage(ConfigUtil.CHAT_POKER_NOT_ENOUGH_PLAYERS.toString());
             resetGame();
             return false;
         }
@@ -846,7 +842,7 @@ public class Poker extends Game {
     public void exitPlayer(Player player) {
         // Game has not "started"
         if(playerBets == null && spotsTaken.size() <= 2) {
-            sendGameMessage("Not enough players to start the game.");
+            sendGameMessage(ConfigUtil.CHAT_POKER_NOT_ENOUGH_PLAYERS.toString());
 
             // Reset the board
             resetGame();

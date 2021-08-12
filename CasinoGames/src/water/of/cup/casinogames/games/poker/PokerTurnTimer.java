@@ -6,6 +6,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import water.of.cup.boardgames.game.GamePlayer;
+import water.of.cup.casinogames.config.ConfigUtil;
 
 public class PokerTurnTimer extends BukkitRunnable {
 
@@ -56,7 +57,7 @@ public class PokerTurnTimer extends BukkitRunnable {
     }
 
     public void sendPlayersClockTimes() {
-        String timeText = player.getDisplayName() + "'s time left: " + (int) (timeLeft / 60) + ":" + (int) (timeLeft % 60);
+        String timeText = ConfigUtil.CHAT_POKER_GAME_PLAYER_TIMER.buildString(player.getDisplayName(), (int) (timeLeft / 60), (int) (timeLeft % 60));
         for (GamePlayer gamePlayer : game.getGamePlayers())
             gamePlayer.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR,
                     TextComponent.fromLegacyText(ChatColor.YELLOW + timeText));
