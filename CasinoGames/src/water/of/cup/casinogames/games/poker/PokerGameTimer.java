@@ -5,6 +5,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.scheduler.BukkitRunnable;
 import water.of.cup.boardgames.game.GamePlayer;
+import water.of.cup.casinogames.config.ConfigUtil;
 
 public class PokerGameTimer extends BukkitRunnable {
 
@@ -37,7 +38,7 @@ public class PokerGameTimer extends BukkitRunnable {
     }
 
     private void sendPlayersClockTimes() {
-        String timeText = "Time to next game: " + (int) (timeLeft / 60) + ":" + (int) (timeLeft % 60);
+        String timeText = ConfigUtil.CHAT_POKER_GAME_START_TIMER.buildString((int) (timeLeft / 60), (int) (timeLeft % 60));
         for (GamePlayer gamePlayer : game.getGamePlayers())
             gamePlayer.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR,
                     TextComponent.fromLegacyText(ChatColor.YELLOW + timeText));
