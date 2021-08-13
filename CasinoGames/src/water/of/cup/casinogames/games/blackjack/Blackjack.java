@@ -844,7 +844,7 @@ public class Blackjack extends Game {
 		this.toggleJoinButtons();
 		if (this.getAmountOfBets() == 0)
 			this.endGame(null);
-		
+
 		mapManager.renderBoard();
 	}
 
@@ -875,7 +875,7 @@ public class Blackjack extends Game {
 				bets++;
 		return bets;
 	}
-	
+
 	@Override
 	public GameNPC getGameNPC() {
 		return new BlackjackNPC(new double[] { 0.5, -1, 1.5 });
