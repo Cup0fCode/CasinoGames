@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import water.of.cup.boardgames.game.Button;
+import water.of.cup.boardgames.game.Game;
 
 public class RouletteBet {
 	private String type;
@@ -11,10 +12,15 @@ public class RouletteBet {
 	private double amount;
 	private Button button;
 
-	public RouletteBet(String type, int position, double amount, int[] loc, String color) {
+	public RouletteBet(String type, int position, double amount, int[] loc, String color, Game game) {
 		this.type = type;
 		this.position = position;
 		this.amount = amount;
+		button = new Button(game, "ROULETTE_CHIP_" + color, new int[] {loc[0] - 3, loc[1] - 3}, 0, "chip");
+	}
+	
+	public Button getButton() {
+		return button;
 	}
 	
 	public double getWin(int winningPos) {

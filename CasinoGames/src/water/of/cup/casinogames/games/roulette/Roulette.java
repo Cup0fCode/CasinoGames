@@ -19,6 +19,7 @@ import water.of.cup.boardgames.game.GameConfig;
 import water.of.cup.boardgames.game.GameImage;
 import water.of.cup.boardgames.game.GamePlayer;
 import water.of.cup.boardgames.game.inventories.GameInventory;
+import water.of.cup.boardgames.game.maps.MapManager;
 import water.of.cup.boardgames.game.storage.GameStorage;
 
 public class Roulette extends Game {
@@ -31,6 +32,8 @@ public class Roulette extends Game {
 	private HashMap<GamePlayer, ArrayList<RouletteBet>> playerBets;
 	
 	private ArrayList<RouletteBetPosition> betPositions;
+	
+	private ArrayList<Button> betButtons;
 
 	public Roulette(int rotation) {
 		super(rotation);
@@ -46,6 +49,7 @@ public class Roulette extends Game {
 		spinning = false;
 		spinnerVal = 0;
 		playerBets = new HashMap<GamePlayer, ArrayList<RouletteBet>>();
+		betButtons = new ArrayList<Button>();
 	}
 
 	private void setBetPositions() {
@@ -241,7 +245,16 @@ public class Roulette extends Game {
 	@Override
 	public ArrayList<String> getTeamNames() {
 		// TODO Auto-generated method stub
-		return null;
+		ArrayList<String> names = new ArrayList<String>();
+		names.add("RED");
+		names.add("BLUE");
+		names.add("GREEN");
+		names.add("YELLOW");
+		names.add("PURPLE");
+		names.add("AQUA");
+		names.add("GREY");
+	
+		return names;
 	}
 
 	@Override
@@ -264,7 +277,7 @@ public class Roulette extends Game {
 			// bet Button clicked
 			String type = b.getType();
 			int position = b.getPosition();
-			RouletteBet bet = new RouletteBet(type, position, 1, clickLoc, "RED");
+			RouletteBet bet = new RouletteBet(type, position, 1, clickLoc, teamManager.getTeamByPlayer(gamePlayer), this);
 			player.sendMessage("Your numbers for " + type + " are: " + Arrays.toString(bet.getWinningNums().toArray()));
 			
 			if (!playerBets.containsKey(gamePlayer))
@@ -272,6 +285,9 @@ public class Roulette extends Game {
 			
 			playerBets.get(gamePlayer).add(bet);
 			
+			betButtons.add(bet.getButton());
+			buttons.add(bet.getButton());
+			mapManager.renderBoard();
 			
 			return;
 		}
@@ -307,19 +323,32 @@ public class Roulette extends Game {
 		for (GamePlayer player : playerBets.keySet()) {
 			ArrayList<RouletteBet> bets = playerBets.get(player);
 			double total = 0;
-			for (RouletteBet bet : bets)
-				total += bet.getWin(spinnerVal);
+			for (RouletteBet bet : bets) {
+				double win = bet.getWin(spinnerVal);
+				total += win;
+				if (win == 0) {
+					Button b = bet.getButton();
+					betButtons.remove(b);
+					buttons.remove(b);
+				}
+			}
 			
 			player.getPlayer().sendMessage("You won: $" + total);
 				
 		}
+		mapManager.renderBoard();
 		playerBets.clear();
 	}
 	
 
 	protected void updateSpinner() {
 		spinnerButton.setImage(spinner.getGameImage());
-		mapManager.renderBoard();
+		((RouletteMapManager) mapManager).renderSpinner();
+	}
+	
+	@Override
+	protected void createMapManager(int rotation) {
+		mapManager = new RouletteMapManager(mapStructure, rotation, this);
 	}
 
 	@Override
