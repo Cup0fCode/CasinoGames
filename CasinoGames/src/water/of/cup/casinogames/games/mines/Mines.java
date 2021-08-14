@@ -5,10 +5,10 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import water.of.cup.boardgames.BoardGames;
-import water.of.cup.boardgames.config.ConfigUtil;
 import water.of.cup.boardgames.game.*;
 import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.storage.GameStorage;
+import water.of.cup.casinogames.config.ConfigUtil;
 import water.of.cup.casinogames.games.gameutils.MathUtils;
 
 import java.math.BigInteger;
@@ -38,7 +38,7 @@ public class Mines extends Game {
         if(hasGameData("betAmount")) {
             this.betAmount = (int) getGameData("betAmount");
             if (instance.getEconomy().getBalance(teamManager.getTurnPlayer().getPlayer()) < this.betAmount) {
-                teamManager.getTurnPlayer().getPlayer().sendMessage(ConfigUtil.CHAT_GUI_GAME_NO_MONEY_CREATE.toString());
+                teamManager.getTurnPlayer().getPlayer().sendMessage(water.of.cup.boardgames.config.ConfigUtil.CHAT_GUI_GAME_NO_MONEY_CREATE.toString());
                 endGame();
                 return;
             }
@@ -151,9 +151,9 @@ public class Mines extends Game {
         boolean didSelect = selectMine(b, buttonLoc);
         double multiplier = getWinMultiplier(bombCount, getTilesOpened());
         if(didSelect) {
-            player.sendMessage("Current multiplier: " + multiplier + "x. Cash out at: " + Math.round((this.betAmount * multiplier) * 100.0) / 100.0);
+            player.sendMessage(ConfigUtil.CHAT_MINES_CURRENT_MULT.buildString(multiplier, Math.round((this.betAmount * multiplier) * 100.0) / 100.0));
         } else {
-            player.sendMessage("You lost at " + multiplier + "x!");
+            player.sendMessage(ConfigUtil.CHAT_MINES_LOSE.buildString(multiplier + ""));
             endGame();
         }
 
@@ -227,7 +227,7 @@ public class Mines extends Game {
         double multiplier = getTilesOpened() == 0 ? 1.0 : getWinMultiplier(bombCount, getTilesOpened());
         double payout = Math.round((this.betAmount * multiplier) * 100.0) / 100.0;
         instance.getEconomy().depositPlayer(teamManager.getTurnPlayer().getPlayer(), payout);
-        teamManager.getTurnPlayer().getPlayer().sendMessage("You cashed out at " + multiplier + "x! Payout: " + payout);
+        teamManager.getTurnPlayer().getPlayer().sendMessage(ConfigUtil.CHAT_MINES_WIN.buildString(multiplier, payout));
         endGame();
     }
 

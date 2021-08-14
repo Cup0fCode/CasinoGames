@@ -20,6 +20,7 @@ import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.maps.MapData;
 import water.of.cup.boardgames.game.maps.Screen;
 import water.of.cup.boardgames.game.storage.GameStorage;
+import water.of.cup.casinogames.config.ConfigUtil;
 
 public class Plinko extends Game {
 	private BoardGames instance = BoardGames.getInstance();
@@ -43,21 +44,21 @@ public class Plinko extends Game {
 	protected void startGame() {
 		initialBet = (int) this.gameInventory.getGameData("betAmount"); // TODO: get initial bet
 		if (instance.getEconomy().getBalance(teamManager.getTurnPlayer().getPlayer()) < initialBet) {
-			teamManager.getTurnPlayer().getPlayer().sendMessage("You do not have enough funds");
+			teamManager.getTurnPlayer().getPlayer().sendMessage(water.of.cup.boardgames.config.ConfigUtil.CHAT_GUI_GAME_NO_MONEY_CREATE.toString());
 			clearGamePlayers();
 			endGame(null);
 			return;
 		}
 
-		risk = (String) this.gameInventory.getGameData("risk");
+		risk = (String) getGameData("risk");
 		
-		if (risk.equals("Low Risk")) {
+		if (risk.equals(ConfigUtil.GUI_PLINKO_LOW_RISK.toRawString())) {
 			multipliers = new double[] { 0.5, 1, 1.1, 2.1, 5.6 };
 			screen.getGameImage().setImage("PLINKO_LOW");
-		} else if (risk.equals("Normal Risk")) {
+		} else if (risk.equals(ConfigUtil.GUI_PLINKO_NORMAL_RISK.toRawString())) {
 			multipliers = new double[] { 0.4, 0.7, 1.3, 3, 13 };
 			screen.getGameImage().setImage("PLINKO_NORMAL");
-		} else if (risk.equals("High Risk")) {
+		} else if (risk.equals(ConfigUtil.GUI_PLINKO_HIGH_RISK.toRawString())) {
 			multipliers = new double[] { 0.2, 0.3, 1.5, 4, 29 };
 			screen.getGameImage().setImage("PLINKO_HIGH");
 		}
@@ -215,7 +216,7 @@ public class Plinko extends Game {
 		double multiplier = multipliers[Math.abs(ballLoc[0] - 61) / 14];
 		double bet = initialBet * multiplier;
 		// TODO get bet multiplier
-		teamManager.getTurnPlayer().getPlayer().sendMessage("Plinko: You won: $" + bet);
+		teamManager.getTurnPlayer().getPlayer().sendMessage(ConfigUtil.CHAT_PLINKO_WIN.buildString(bet + ""));
 		instance.getEconomy().depositPlayer(teamManager.getTurnPlayer().getPlayer(), bet);
 		endGame(teamManager.getTurnPlayer());
 

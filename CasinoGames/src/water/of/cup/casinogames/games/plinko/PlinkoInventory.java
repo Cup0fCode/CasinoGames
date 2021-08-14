@@ -11,6 +11,7 @@ import water.of.cup.boardgames.game.GamePlayer;
 import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.inventories.GameOption;
 import water.of.cup.boardgames.game.inventories.GameOptionType;
+import water.of.cup.casinogames.config.ConfigUtil;
 import water.of.cup.casinogames.games.slots.SlotsGame;
 
 public class PlinkoInventory extends GameInventory {
@@ -28,7 +29,7 @@ public class PlinkoInventory extends GameInventory {
 		GameOption bet = new GameOption("betAmount", Material.GOLD_NUGGET, GameOptionType.COUNT, null, "0", true);
 		options.add(bet);
 
-		List<String> riskValues = Arrays.asList("Low Risk", "Normal Risk", "High Risk");
+		List<String> riskValues = Arrays.asList(ConfigUtil.GUI_PLINKO_LOW_RISK.toString(), ConfigUtil.GUI_PLINKO_NORMAL_RISK.toString(), ConfigUtil.GUI_PLINKO_HIGH_RISK.toString());
 		GameOption risk = new GameOption("risk", Material.EXPERIENCE_BOTTLE, GameOptionType.COUNT, null, riskValues.get(1), riskValues);
 		options.add(risk);
 		return options;
