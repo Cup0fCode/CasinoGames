@@ -748,7 +748,7 @@ public class Poker extends Game {
 
         for(SidePot sidePot : this.sidePots) {
             GamePlayer winner = getBestHand(sidePot.getPotPlayers());
-            sendGameMessage(ConfigUtil.CHAT_POKER_WIN_POT.buildString(winner.getPlayer().getDisplayName(), sidePot.getPotAmount()));
+            sendGameMessage(ConfigUtil.CHAT_POKER_WIN_SIDE_POT.buildString(winner.getPlayer().getDisplayName(), sidePot.getPotAmount()));
             finalPlayers.put(winner, sidePot.getPotAmount());
         }
 

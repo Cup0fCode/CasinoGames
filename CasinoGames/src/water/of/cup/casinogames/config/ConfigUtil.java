@@ -7,6 +7,8 @@ import water.of.cup.boardgames.config.ConfigInterface;
 public enum ConfigUtil implements ConfigInterface {
 
     // CHAT
+
+    // POKER
     CHAT_POKER_ALL_IN("settings.messages.chat.pokerallin", "%player% has gone all in!"),
     CHAT_POKER_BET_SMALL_BLIND("settings.messages.chat.pokersmallblind", "%player% bet small blind %num%"),
     CHAT_POKER_BET_BIG_BLIND("settings.messages.chat.pokerbigblind", "%player% bet big blind %num%"),
@@ -29,6 +31,44 @@ public enum ConfigUtil implements ConfigInterface {
     CHAT_POKER_GAME_START_TIMER("settings.messages.chat.pokergamestarttimer", "Time to next game: %num%:%num2%"),
     CHAT_POKER_GAME_PLAYER_TIMER("settings.messages.chat.pokergameplayertimer", "%player%'s time left: %num%:%num2%"),
 
+    // MINES
+    CHAT_MINES_CURRENT_MULT("settings.messages.chat.minescurrentmult", "Current multiplier: %num%x Cash out at: %num2%%"),
+    CHAT_MINES_LOSE("settings.messages.chat.minelose", "You lost at %num%x!"),
+    CHAT_MINES_WIN("settings.messages.chat.minewin", "You cashed out at %num%x! Payout: %num2%"),
+
+    // PLINKO
+    CHAT_PLINKO_WIN("settings.messages.chat.plinkowin", "Plinko: You won: %num%"),
+
+    // HI LO
+    CHAT_HILO_CURRENT_BET("settings.messages.chat.hilocurrentbet", "HI-LO: Current Bet: %num%"),
+    CHAT_HILO_LOSE("settings.messages.chat.hilolose", "HI-LO: You Lost: %num%"),
+    CHAT_HILO_WIN("settings.messages.chat.hilowin", "HI-LO: You cashed out with: %num%"),
+
+    // SLOTS
+    CHAT_SLOTS_WIN("settings.messages.chat.slotswin", "You won: %num%"),
+    CHAT_SLOTS_WIN_NEARBY("settings.messages.chat.slotswinnearby", "%player% won %num% playing %game%"),
+
+    // CARDS
+    CARD_SUIT_CLUBS("settings.messages.cards.clubs", "Clubs"),
+    CARD_SUIT_DIAMONDS("settings.messages.cards.diamonds", "Diamonds"),
+    CARD_SUIT_HEARTS("settings.messages.cards.hearts", "Hearts"),
+    CARD_SUIT_SPADES("settings.messages.cards.spades", "Spades"),
+    CARD_SUIT_JOKER("settings.messages.cards.joker", "Joker"),
+    CARD_ACE("settings.messages.cards.ace", "Ace"),
+    CARD_TWO("settings.messages.cards.two", "Two"),
+    CARD_THREE("settings.messages.cards.three", "Three"),
+    CARD_FOUR("settings.messages.cards.four", "Four"),
+    CARD_FIVE("settings.messages.cards.five", "Five"),
+    CARD_SIX("settings.messages.cards.six", "Six"),
+    CARD_SEVEN("settings.messages.cards.seven", "Seven"),
+    CARD_EIGHT("settings.messages.cards.eight", "Eight"),
+    CARD_NINE("settings.messages.cards.nine", "Nine"),
+    CARD_TEN("settings.messages.cards.ten", "Ten"),
+    CARD_JACK("settings.messages.cards.jack", "Jack"),
+    CARD_QUEEN("settings.messages.cards.queen", "Queen"),
+    CARD_KING("settings.messages.cards.king", "King"),
+    CARD_FORMAT("settings.messages.cards.format", " of "),
+
     // NPC
     NPC_POKER_NAME("settings.messages.npc.pokernpcname", "Dealer"),
     NPC_POKER_SKIN_SIG("settings.messages.npc.pokerskinsig", "T5QGS3fQ9wWvsjmD6l9b/nZMkfOfYW1X3c1xvDdZQ5WHvPmew//3Q86+yfgQqIjPvEcXiDilr71p3WDrz/itsLb5mf9wLU5P4X18x5c6bmmv49TDLUCH5mEIUXu1jiQ8Kog/vzZNGZAAxadTGQPJ7BdII/+OpHDLS+WiCPRMnjCs/1h5RTE7I1OOPQnsh+yk+gOpaxCxgVFMLnMqNnL3mJP05qajHI6OKKXnyyXPwV0xxA3XT2WPbtCPsux3CjNCPP7fA1mYL4dPtdTaju9kP+6jeuf0IkS0jZ31bHKx324cM/W4xiSbR/2OSyYepHdS7TxWPZIYpkMPbaHMLXao7Ok209LD7p3GWZ5RDNvnZTcvGlF10wKoHJ9xy7lHoSfy4NfRAD3doATK5meRo7/JQCCo8M8Mw6dnBvYC9bcb3zCrvTkwQz2dfjkHvmH/QcWkJS5iqYCS6Uk67PJsFtYxa5a9ZBiZGUVxhprrB0hoZem0vfsnzGgzbwjpw0VxDSN1ndXSIJZ4yXB2KI58NE0HMjkVL9OcmOItoS4fqLqdo7CqrntdHsRcDZ7lSaCFVphBMsJI3AbrWAyIM54N9SSMJgpQkrbJ1tWhO1jp8mTXGqW1YlbmCEFS+LRR6sk/F3YK6FtSucJlhlrOdeKGHVaESWLVFzTMBgfVS3TfKSxSRI8="),
@@ -39,7 +79,10 @@ public enum ConfigUtil implements ConfigInterface {
     GUI_BET_AMOUNT_LABEL("settings.messages.gui.betamountlabel", "&2Bet Amount: "),
     GUI_MINES_CASH_OUT("settings.messages.gui.minescashout", "&aCash-Out"),
     GUI_POKER_MIN_ENTRY_LABEL("settings.messages.gui.pokerminentrylabel", "&aMinimum Entry: "),
-    GUI_POKER_RAISE_LIMIT_LABEL("settings.messages.gui.pokerraiselimitlabel", "&aRaise Limit: ");
+    GUI_POKER_RAISE_LIMIT_LABEL("settings.messages.gui.pokerraiselimitlabel", "&aRaise Limit: "),
+    GUI_PLINKO_LOW_RISK("settings.messages.gui.plinkolowrisk", "Low Risk"),
+    GUI_PLINKO_NORMAL_RISK("settings.messages.gui.plinkonormalrisk", "Normal Risk"),
+    GUI_PLINKO_HIGH_RISK("settings.messages.gui.plinkohighrisk", "High Risk");
 
     private final String path;
     private final String defaultValue;
@@ -82,6 +125,15 @@ public enum ConfigUtil implements ConfigInterface {
         return formatted;
     }
 
+    public String buildString(String player, String game, Number num) {
+        String formatted = this.toString();
+
+        formatted = formatted.replace("%player%", player)
+                .replace("%game%", game)
+                .replace("%num%", num + "");
+        return formatted;
+    }
+
     public String buildString(String replaceWith, int num) {
         String formatted = this.toString();
 
@@ -105,7 +157,7 @@ public enum ConfigUtil implements ConfigInterface {
         return formatted;
     }
 
-    public String buildString(int num, int num2) {
+    public String buildString(Number num, Number num2) {
         String formatted = this.toString();
 
         formatted = formatted

@@ -16,6 +16,7 @@ import water.of.cup.boardgames.game.GameImage;
 import water.of.cup.boardgames.game.GamePlayer;
 import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.storage.GameStorage;
+import water.of.cup.casinogames.config.ConfigUtil;
 import water.of.cup.casinogames.games.gameutils.cards.Card;
 import water.of.cup.casinogames.games.gameutils.cards.Deck;
 
@@ -62,7 +63,7 @@ public class HiLo extends Game {
 	protected void startGame() {
 		bet = (int) this.gameInventory.getGameData("betAmount"); // TODO: get initial bet
 		if (instance.getEconomy().getBalance(teamManager.getTurnPlayer().getPlayer()) < bet) {
-			teamManager.getTurnPlayer().getPlayer().sendMessage("You do not have enough funds");
+			teamManager.getTurnPlayer().getPlayer().sendMessage(water.of.cup.boardgames.config.ConfigUtil.CHAT_GUI_GAME_NO_MONEY_CREATE.toString());
 			clearGamePlayers();
 			endGame(null);
 			return;
@@ -103,11 +104,11 @@ public class HiLo extends Game {
 			// win
 			double betIncrease = getBetIncrease(cardValue, high);
 			bet *= betIncrease;
-			teamManager.getTurnPlayer().getPlayer().sendMessage("HI-LO: Current Bet: $" + bet);
+			teamManager.getTurnPlayer().getPlayer().sendMessage(ConfigUtil.CHAT_HILO_CURRENT_BET.buildString(bet + ""));
 			
 		} else {
 			// loss
-			teamManager.getTurnPlayer().getPlayer().sendMessage("HI-LO: You Lost: $" + bet);
+			teamManager.getTurnPlayer().getPlayer().sendMessage(ConfigUtil.CHAT_HILO_LOSE.buildString(bet + ""));
 			endGame(null);
 		}
 		
@@ -119,7 +120,7 @@ public class HiLo extends Game {
 	}
 
 	private void cashOut() {
-		teamManager.getTurnPlayer().getPlayer().sendMessage("HI-LO: You cashed out with: $" + bet);
+		teamManager.getTurnPlayer().getPlayer().sendMessage(ConfigUtil.CHAT_HILO_WIN.buildString(bet + ""));
 		instance.getEconomy().depositPlayer(teamManager.getTurnPlayer().getPlayer(), bet);
 		endGame(teamManager.getTurnPlayer());
 	}

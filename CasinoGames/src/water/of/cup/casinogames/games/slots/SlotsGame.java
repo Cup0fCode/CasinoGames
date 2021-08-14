@@ -20,6 +20,7 @@ import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.maps.MapData;
 import water.of.cup.boardgames.game.maps.Screen;
 import water.of.cup.boardgames.game.storage.GameStorage;
+import water.of.cup.casinogames.config.ConfigUtil;
 
 public abstract class SlotsGame extends Game {
 	private BoardGames instance = BoardGames.getInstance();
@@ -69,7 +70,7 @@ public abstract class SlotsGame extends Game {
 	protected void startGame() {
 		initialBet = (int) this.gameInventory.getGameData("betAmount"); // TODO: get initial bet
 		if (instance.getEconomy().getBalance(teamManager.getTurnPlayer().getPlayer()) < initialBet) {
-			teamManager.getTurnPlayer().getPlayer().sendMessage("You do not have enough funds");
+			teamManager.getTurnPlayer().getPlayer().sendMessage(water.of.cup.boardgames.config.ConfigUtil.CHAT_GUI_GAME_NO_MONEY_CREATE.toString());
 			clearGamePlayers();
 			endGame(null);
 			return;
@@ -109,7 +110,7 @@ public abstract class SlotsGame extends Game {
 		// give payout
 		Player player = teamManager.getTurnPlayer().getPlayer();
 		instance.getEconomy().depositPlayer(player, payout);
-		player.sendMessage("You won $" + payout);
+		player.sendMessage(ConfigUtil.CHAT_SLOTS_WIN.buildString(payout + ""));
 //		player.sendMessage("Win Ratio: " + winRatio);
 //		player.sendMessage("Average Win Payout: " + getAverageWinPayout());
 
@@ -118,7 +119,7 @@ public abstract class SlotsGame extends Game {
 		// send nearby players win message
 		if (payout > 0)
 			player.getWorld().getNearbyEntities(player.getLocation(), 10, 10, 10, e -> e instanceof Player && e != player).stream()
-					.forEach(e -> e.sendMessage(player.getDisplayName() + " won $" + payout + " playing " + this.getGameName()));
+					.forEach(e -> e.sendMessage(ConfigUtil.CHAT_SLOTS_WIN_NEARBY.buildString(player.getDisplayName(), getAltName(), payout)));
 	}
 
 	private double calculatePayout() {
