@@ -20,7 +20,7 @@ public class RouletteBet {
 	public double getWin(int winningPos) {
 		for (int n : getWinningNums())
 			if (n == winningPos)
-				return getMultiplier() * amount;
+				return (getMultiplier() + 1) * amount;
 		return 0;
 	}
 
@@ -73,7 +73,7 @@ public class RouletteBet {
 			break;
 		case "split":
 			if (position <= 24) {
-				int pos = (position / 2 - 1) * 3 + 2 - position % 2;
+				int pos = ((position + 1) / 2 - 1) * 3 + 2 - position % 2;
 				winningNums.add(pos);
 				winningNums.add(pos + 1);
 			} else {
