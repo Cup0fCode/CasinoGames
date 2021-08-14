@@ -2,6 +2,7 @@ package water.of.cup.casinogames.games.gameutils.cards;
 
 import water.of.cup.boardgames.game.GameImage;
 import water.of.cup.boardgames.image_handling.ImageManager;
+import water.of.cup.casinogames.config.ConfigUtil;
 
 public class Card {
 	int num; // ace is 0
@@ -46,37 +47,37 @@ public class Card {
 	}
 
 	public String getName() {
-		return getShortName() + " of " + suit.getName();
+		return getShortName() + ConfigUtil.CARD_FORMAT.toString() + suit.getName();
 	}
 
 	public String getShortName() {
 		switch (getValue(false)) {
 		case 1:
-			return "Ace";
+			return ConfigUtil.CARD_ACE.toString();
 		case 2:
-			return "Two";
+			return ConfigUtil.CARD_TWO.toString();
 		case 3:
-			return "Three";
+			return ConfigUtil.CARD_THREE.toString();
 		case 4:
-			return "Four";
+			return ConfigUtil.CARD_FOUR.toString();
 		case 5:
-			return "Five";
+			return ConfigUtil.CARD_FIVE.toString();
 		case 6:
-			return "Six";
+			return ConfigUtil.CARD_SIX.toString();
 		case 7:
-			return "Seven";
+			return ConfigUtil.CARD_SEVEN.toString();
 		case 8:
-			return "Eight";
+			return ConfigUtil.CARD_EIGHT.toString();
 		case 9:
-			return "Nine";
+			return ConfigUtil.CARD_NINE.toString();
 		case 10:
-			return "Ten";
+			return ConfigUtil.CARD_TEN.toString();
 		case 11:
-			return "Jack";
+			return ConfigUtil.CARD_JACK.toString();
 		case 12:
-			return "Queen";
+			return ConfigUtil.CARD_QUEEN.toString();
 		case 13:
-			return "King";
+			return ConfigUtil.CARD_KING.toString();
 		}
 
 		return "";

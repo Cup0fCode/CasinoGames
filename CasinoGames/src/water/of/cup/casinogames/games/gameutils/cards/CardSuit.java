@@ -1,5 +1,7 @@
 package water.of.cup.casinogames.games.gameutils.cards;
 
+import water.of.cup.casinogames.config.ConfigUtil;
+
 public enum CardSuit {
 	CLUBS, DIAMONDS, HEARTS, SPADES;
 	
@@ -22,15 +24,15 @@ public enum CardSuit {
 	public String getName() {
 		switch (this) {
 		case CLUBS:
-			return "Clubs";
+			return ConfigUtil.CARD_SUIT_CLUBS.toString();
 		case DIAMONDS:
-			return "Diamonds";
+			return ConfigUtil.CARD_SUIT_DIAMONDS.toString();
 		case HEARTS:
-			return "Hearts";
+			return ConfigUtil.CARD_SUIT_HEARTS.toString();
 		case SPADES:
-			return "Spades";
+			return ConfigUtil.CARD_SUIT_SPADES.toString();
 		default:
-			return "Joker";
+			return ConfigUtil.CARD_SUIT_JOKER.toString();
 		
 		}
 	}
