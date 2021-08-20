@@ -29,10 +29,12 @@ public class Roulette extends Game {
 	private RouletteSpinnerRunnable spinnerRunnable;
 	private int spinnerVal;
 
+	private RouletteStateRunnable rouletteStateRunnable;
+
 	private HashMap<GamePlayer, ArrayList<RouletteBet>> playerBets;
-	
+
 	private ArrayList<RouletteBetPosition> betPositions;
-	
+
 	private ArrayList<Button> betButtons;
 
 	public Roulette(int rotation) {
@@ -40,10 +42,10 @@ public class Roulette extends Game {
 		spinner = new RouletteSpinner(this);
 		spinnerButton = new Button(this, spinner.getGameImage(), new int[] { 0, 256 }, 0, "spinner");
 		buttons.add(spinnerButton);
-		
+
 		Button betsButton = new Button(this, "ROULETTE_BETS", new int[] { 0, 0 }, 2, "bets");
 		buttons.add(betsButton);
-		
+
 		setBetPositions();
 
 		spinning = false;
@@ -53,47 +55,46 @@ public class Roulette extends Game {
 	}
 
 	private void setBetPositions() {
-		
+
 		betPositions = new ArrayList<RouletteBetPosition>();
 
 //		private Button[] cornerButtons;
-		int[] cornerImage = {7,7};
-	
+		int[] cornerImage = { 7, 7 };
+
 		for (int i = 0; i < 22; i++) {
-			int[] loc = { 113 - (i % 2) * 23, 207 - (i / 2) * 17 - i / 8};
+			int[] loc = { 113 - (i % 2) * 23, 207 - (i / 2) * 17 - i / 8 };
 
 			betPositions.add(new RouletteBetPosition(cornerImage, loc, i, "corner"));
 		}
 
 //		private Button[] straitButtons;
-		int[] straitImage = {18 , 12};
-	
+		int[] straitImage = { 18, 12 };
+
 		for (int i = 0; i < 36; i++) {
-			int[] loc = { 119 - (i % 3) * 23, 213 - (i / 3) * 17 - i / 12};
+			int[] loc = { 119 - (i % 3) * 23, 213 - (i / 3) * 17 - i / 12 };
 
 			betPositions.add(new RouletteBetPosition(straitImage, loc, i, "strait"));
 		}
 
 //		private Button[] splitButtons;
-		int[] splitHImage = {16 , 5};
-		int[] splitVImage = {5,10};
+		int[] splitHImage = { 16, 5 };
+		int[] splitVImage = { 5, 10 };
 
-		
 		for (int i = 0; i < 24; i++) {
-			int[] loc = { 114 - (i % 2) * 23, 214 - (i / 2) * 17 - i / 8};
+			int[] loc = { 114 - (i % 2) * 23, 214 - (i / 2) * 17 - i / 8 };
 
 			betPositions.add(new RouletteBetPosition(splitVImage, loc, i, "split"));
 		}
 		for (int i = 24; i < 57; i++) {
-			int[] loc = { 120 - ((i - 24) % 3) * 23, 208 - ((i - 24) / 3) * 17 - (i - 24) / 12};
+			int[] loc = { 120 - ((i - 24) % 3) * 23, 208 - ((i - 24) / 3) * 17 - (i - 24) / 12 };
 
 			betPositions.add(new RouletteBetPosition(splitHImage, loc, i, "split"));
 		}
 
 //		private Button[] streetButtons;
 
-		int[] streetImage = {6, 10};
-		
+		int[] streetImage = { 6, 10 };
+
 		for (int i = 0; i < 12; i++) {
 			int[] loc = { 137, 214 - i * 17 - i / 4 };
 
@@ -101,7 +102,6 @@ public class Roulette extends Game {
 		}
 
 //		private Button[] sixLineButtons;
-
 
 		for (int i = 0; i < 11; i++) {
 			int[] loc = { 136, 207 - i * 17 - i / 4 };
@@ -111,7 +111,6 @@ public class Roulette extends Game {
 
 //		private Button[] trioButtons;
 
-	
 		for (int i = 0; i < 2; i++) {
 			int[] loc = { 113 - i * 23, 224 };
 
@@ -124,11 +123,10 @@ public class Roulette extends Game {
 		int[] basketLoc = { 136, 224 };
 
 		betPositions.add(new RouletteBetPosition(cornerImage, basketLoc, 0, "basket"));
-		
 
 //		private Button[] redBlackButtons;
 
-		int[] outsideSmallImage = {23, 33, BufferedImage.TYPE_INT_RGB};
+		int[] outsideSmallImage = { 23, 33, BufferedImage.TYPE_INT_RGB };
 
 		for (int i = 0; i < 2; i++) {
 			int[] loc = { 162, 125 - i * 34 };
@@ -154,8 +152,7 @@ public class Roulette extends Game {
 
 //		private Button[] dozensButtons;
 
-		int[] dozensImage = {20, 67};
-
+		int[] dozensImage = { 20, 67 };
 
 		for (int i = 0; i < 3; i++) {
 			int[] loc = { 141, 160 - i * 69 };
@@ -164,9 +161,9 @@ public class Roulette extends Game {
 		}
 
 //		private Button[] columnsButtons;
-		int[] columnsImage = {22, 15};
-		
-		//columnsButtons = new Button[3];
+		int[] columnsImage = { 22, 15 };
+
+		// columnsButtons = new Button[3];
 		for (int i = 0; i < 3; i++) {
 			int[] loc = { 117 - i * 23, 6 };
 
@@ -174,9 +171,9 @@ public class Roulette extends Game {
 		}
 
 		// private Button[] strait0Buttons;
-		int[] strait0Image = {34, 18};
+		int[] strait0Image = { 34, 18 };
 
-		//strait0Buttons = new Button[2];
+		// strait0Buttons = new Button[2];
 		for (int i = 0; i < 2; i++) {
 			int[] loc = { 105 - i * 35, 229 };
 
@@ -191,19 +188,30 @@ public class Roulette extends Game {
 
 	}
 
-	protected void startRound() {
-		spin();
-	}
+//	protected void startRound() {
+//		spin();
+//	}
 
 	protected void prepareNextRound() {
 		playerBets = new HashMap<GamePlayer, ArrayList<RouletteBet>>();
 
+	}
+	
+	private void dealerSendMessage(Player player, String message) {
+		player.sendMessage("Dealer: " + message);
+	}
+
+	protected void dealerSendAll(String message) {
+		for (GamePlayer player : teamManager.getGamePlayers())
+			player.getPlayer().sendMessage("Dealer: " + message);
 	}
 
 	@Override
 	public void startGame() {
 		super.startGame();
 		this.setInGame();
+		rouletteStateRunnable = new RouletteStateRunnable(this);
+		rouletteStateRunnable.runTaskTimer(BoardGames.getInstance(), 9, 9);
 	}
 
 	@Override
@@ -253,7 +261,7 @@ public class Roulette extends Game {
 		names.add("PURPLE");
 		names.add("AQUA");
 		names.add("GREY");
-	
+
 		return names;
 	}
 
@@ -265,11 +273,14 @@ public class Roulette extends Game {
 
 	@Override
 	public void click(Player player, double[] loc, ItemStack map) {
-		if (spinning)
-			return;
+//		if (spinning)
+//			return;
 		GamePlayer gamePlayer = getGamePlayer(player);
 		// player.sendMessage("clicked");
-
+		
+		if (!rouletteStateRunnable.canBet())
+			return; 
+		
 		int[] clickLoc = mapManager.getClickLocation(loc, map);
 
 		RouletteBetPosition b = getClickedBetPosition(clickLoc);
@@ -277,22 +288,23 @@ public class Roulette extends Game {
 			// bet Button clicked
 			String type = b.getType();
 			int position = b.getPosition();
-			RouletteBet bet = new RouletteBet(type, position, 1, clickLoc, teamManager.getTeamByPlayer(gamePlayer), this);
+			RouletteBet bet = new RouletteBet(type, position, 1, clickLoc, teamManager.getTeamByPlayer(gamePlayer),
+					this);
 			player.sendMessage("Your numbers for " + type + " are: " + Arrays.toString(bet.getWinningNums().toArray()));
-			
+
 			if (!playerBets.containsKey(gamePlayer))
 				playerBets.put(gamePlayer, new ArrayList<RouletteBet>());
-			
+
 			playerBets.get(gamePlayer).add(bet);
-			
+
 			betButtons.add(bet.getButton());
 			buttons.add(bet.getButton());
 			mapManager.renderBoard();
-			
+
 			return;
 		}
 
-		spin();
+		//spin();
 	}
 
 	private RouletteBetPosition getClickedBetPosition(int[] clickLoc) {
@@ -303,7 +315,7 @@ public class Roulette extends Game {
 		return null;
 	}
 
-	private void spin() {
+	protected void spin() {
 		spinning = true;
 		spinnerRunnable = new RouletteSpinnerRunnable(this, spinner);
 		spinnerRunnable.runTaskTimer(BoardGames.getInstance(), 3, 3);
@@ -311,13 +323,14 @@ public class Roulette extends Game {
 
 	protected void endSpin() {
 		spinning = false;
+		rouletteStateRunnable.endSpin();
 		if (!spinnerRunnable.isCancelled())
 			spinnerRunnable.cancel();
 		spinnerVal = spinner.getValue();
 		teamManager.getGamePlayers().get(0).getPlayer().sendMessage("value: " + spinnerVal);
 		giveBets();
 	}
-	
+
 	private void giveBets() {
 		int spinnerVal = spinner.getValue();
 		for (GamePlayer player : playerBets.keySet()) {
@@ -332,20 +345,27 @@ public class Roulette extends Game {
 					buttons.remove(b);
 				}
 			}
-			
+
 			player.getPlayer().sendMessage("You won: $" + total);
-				
+
 		}
 		mapManager.renderBoard();
 		playerBets.clear();
 	}
 	
+	protected void clearBetButtons() {
+		for (Button b : betButtons)
+			buttons.remove(b);
+		betButtons.clear();
+		mapManager.renderBoard();
+		
+	}
 
 	protected void updateSpinner() {
 		spinnerButton.setImage(spinner.getGameImage());
 		((RouletteMapManager) mapManager).renderSpinner();
 	}
-	
+
 	@Override
 	protected void createMapManager(int rotation) {
 		mapManager = new RouletteMapManager(mapStructure, rotation, this);
@@ -360,5 +380,22 @@ public class Roulette extends Game {
 	@Override
 	public ItemStack getBoardItem() {
 		return new BoardItem(gameName, new ItemStack(Material.BLACK_CARPET, 1));
+	}
+
+	public boolean betMade() {
+		for (ArrayList<RouletteBet> bets : playerBets.values())
+			if (bets.size() > 0)
+				return true;
+
+		return false;
+	}
+	
+	@Override
+	public void endGame(GamePlayer winner) {
+		rouletteStateRunnable.cancel();
+		if (spinnerRunnable != null && !spinnerRunnable.isCancelled())
+			spinnerRunnable.cancel();
+		
+		super.endGame(null);
 	}
 }
