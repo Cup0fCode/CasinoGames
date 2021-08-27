@@ -34,7 +34,7 @@ public class MoneyHoney extends SlotsGame {
 
 	@Override
 	protected void setBoardImage() {
-		this.gameImage = new GameImage("LIBERTYBELL_BOARD");
+		this.gameImage = new GameImage("MONEYHONEY_BOARD");
 
 	}
 
@@ -53,9 +53,10 @@ public class MoneyHoney extends SlotsGame {
 	@Override
 	protected Button[][] getSlotsButtons() {
 		Button[][] buttons = new Button[3][3];
-		for (int x = 0; x < 3; x++)
+		int[] xloc = new int[] {7, 52 , 97};
+		for (int x = 0 ; x < 3; x++)
 			for (int y = 0; y < 3; y++) {
-				Button b = new Button(this, "MONEYHONEY_GIRLS", new int[] { 40 + x * 16, 40 + y * 16 }, 0, "slot");
+				Button b = new Button(this, "MONEYHONEY_GIRLS", new int[] { xloc[x] + 4, 26 + y * 25 + x }, 0, "slot");
 				buttons[y][x] = b;
 			}
 		return buttons;
