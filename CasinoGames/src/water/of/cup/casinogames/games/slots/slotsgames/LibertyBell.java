@@ -53,10 +53,13 @@ public class LibertyBell extends SlotsGame {
 	@Override
 	protected Button[][] getSlotsButtons() {
 		Button[][] buttons = new Button[1][3];
-		for (int x = 0; x < 3; x ++) {
-			Button b = new Button(this, "LIBERTYBELL_BELL", new int[] {40 + x * 16 , 56 }, 0, "slot");
-			buttons[0][x] = b;
-		}
+//		for (int x = 0; x < 3; x ++) {
+//			Button b = new Button(this, "LIBERTYBELL_BELL", new int[] {40 + x * 16 , 56 }, 0, "slot");
+//			buttons[0][x] = b;
+//		}
+		buttons[0][0] = new Button(this, "LIBERTYBELL_BELL", new int[] {18 , 16 }, 0, "slot");
+		buttons[0][1] = new Button(this, "LIBERTYBELL_BELL", new int[] {41 , 16 }, 0, "slot");
+		buttons[0][2] = new Button(this, "LIBERTYBELL_BELL", new int[] {63 , 16 }, 0, "slot");
 		return buttons;
 	}
 
