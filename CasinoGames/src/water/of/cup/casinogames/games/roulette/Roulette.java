@@ -208,8 +208,9 @@ public class Roulette extends Game {
 
 	@Override
 	public void startGame() {
-		super.startGame();
-		this.setInGame();
+		//clearGamePlayers();
+		//super.startGame();
+		super.setInGame();
 		rouletteStateRunnable = new RouletteStateRunnable(this);
 		rouletteStateRunnable.runTaskTimer(BoardGames.getInstance(), 9, 9);
 	}
@@ -276,6 +277,14 @@ public class Roulette extends Game {
 //		if (spinning)
 //			return;
 		GamePlayer gamePlayer = getGamePlayer(player);
+		if (gamePlayer == null) {
+			gamePlayer = this.addPlayer(player);
+			//teamManager.addTeam(gamePlayer);
+			this.dealerSendMessage(player, "Welcome to Roulette.  You're chips are " + teamManager.getTeamByPlayer(gamePlayer).toLowerCase() + ".");
+			return;
+		}
+			
+		
 		// player.sendMessage("clicked");
 		
 		if (!rouletteStateRunnable.canBet())
@@ -395,6 +404,7 @@ public class Roulette extends Game {
 		rouletteStateRunnable.cancel();
 		if (spinnerRunnable != null && !spinnerRunnable.isCancelled())
 			spinnerRunnable.cancel();
+		this.clearBetButtons();
 		
 		super.endGame(null);
 	}
