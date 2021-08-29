@@ -20,7 +20,9 @@ import water.of.cup.boardgames.game.GameImage;
 import water.of.cup.boardgames.game.GamePlayer;
 import water.of.cup.boardgames.game.inventories.GameInventory;
 import water.of.cup.boardgames.game.maps.MapManager;
+import water.of.cup.boardgames.game.npcs.GameNPC;
 import water.of.cup.boardgames.game.storage.GameStorage;
+import water.of.cup.casinogames.games.blackjack.BlackjackNPC;
 
 public class Roulette extends Game {
 	private RouletteSpinner spinner;
@@ -210,6 +212,7 @@ public class Roulette extends Game {
 	public void startGame() {
 		//clearGamePlayers();
 		//super.startGame();
+		spawnNPC();
 		super.setInGame();
 		rouletteStateRunnable = new RouletteStateRunnable(this);
 		rouletteStateRunnable.runTaskTimer(BoardGames.getInstance(), 9, 9);
@@ -407,5 +410,10 @@ public class Roulette extends Game {
 		this.clearBetButtons();
 		
 		super.endGame(null);
+	}
+	
+	@Override
+	public GameNPC getGameNPC() {
+		return new RouletteNPC(new double[] { 0.5, -1, 1.5 });
 	}
 }
