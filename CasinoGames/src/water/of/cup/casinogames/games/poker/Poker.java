@@ -752,10 +752,14 @@ public class Poker extends Game {
             finalPlayers.put(winner, sidePot.getPotAmount());
         }
 
-        // Show winning cards / Send money to players
+        // Send money to players
         for(GamePlayer inGamePlayer : finalPlayers.keySet()) {
-            playerHandButtons.get(inGamePlayer).setVisibleForAll(true);
             instance.getEconomy().depositPlayer(inGamePlayer.getPlayer(), finalPlayers.get(inGamePlayer));
+        }
+
+        // Show cards
+        for(GamePlayer gamePlayer : playerHandButtons.keySet()) {
+            playerHandButtons.get(gamePlayer).setVisibleForAll(true);
         }
 
         mapManager.renderBoard();
