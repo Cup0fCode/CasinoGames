@@ -19,10 +19,15 @@ import water.of.cup.boardgames.game.GameConfig;
 import water.of.cup.boardgames.game.GameImage;
 import water.of.cup.boardgames.game.GamePlayer;
 import water.of.cup.boardgames.game.inventories.GameInventory;
+import water.of.cup.boardgames.game.inventories.GameOption;
+import water.of.cup.boardgames.game.inventories.GameOptionType;
+import water.of.cup.boardgames.game.inventories.number.GameNumberInventory;
 import water.of.cup.boardgames.game.maps.MapManager;
 import water.of.cup.boardgames.game.npcs.GameNPC;
 import water.of.cup.boardgames.game.storage.GameStorage;
+import water.of.cup.casinogames.config.ConfigUtil;
 import water.of.cup.casinogames.games.blackjack.BlackjackNPC;
+import water.of.cup.casinogames.games.gameutils.EconomyUtils;
 
 public class Roulette extends Game {
 	private RouletteSpinner spinner;
@@ -219,6 +224,44 @@ public class Roulette extends Game {
 	}
 
 	@Override
+	public void exitPlayer(Player player) {
+		// In betting stage
+		GamePlayer gamePlayer = teamManager.getGamePlayer(player);
+		if(rouletteStateRunnable.canBet()) {
+			// Give money back
+			returnRouletteBets(gamePlayer);
+
+			// Clear chips
+			clearRouletteChips(gamePlayer);
+			mapManager.renderBoard();
+		}
+
+		playerBets.remove(gamePlayer);
+		teamManager.removeTeamByPlayer(player);
+
+		if(teamManager.getGamePlayers().size() <= 0)
+			endGame(null);
+	}
+
+	private void returnRouletteBets(GamePlayer gamePlayer) {
+		if(!playerBets.containsKey(gamePlayer)) return;
+		for(RouletteBet rouletteBet : playerBets.get(gamePlayer)) {
+			EconomyUtils.playerGiveMoney(gamePlayer.getPlayer(), rouletteBet.getAmount());
+		}
+	}
+
+	private void clearRouletteChips(GamePlayer gamePlayer) {
+		if(!playerBets.containsKey(gamePlayer)) return;
+		ArrayList<Button> chipButtons = new ArrayList<>();
+		for(RouletteBet rouletteBet : playerBets.get(gamePlayer)) {
+			chipButtons.add(rouletteBet.getButton());
+		}
+
+		buttons.removeAll(chipButtons);
+		betButtons.removeAll(chipButtons);
+	}
+
+	@Override
 	protected void setGameName() {
 		this.gameName = "Roulette";
 
@@ -298,22 +341,27 @@ public class Roulette extends Game {
 		RouletteBetPosition b = getClickedBetPosition(clickLoc);
 		if (b != null) {
 			// bet Button clicked
-			String type = b.getType();
-			int position = b.getPosition();
-			RouletteBet bet = new RouletteBet(type, position, 1, clickLoc, teamManager.getTeamByPlayer(gamePlayer),
-					this);
-			player.sendMessage("Your numbers for " + type + " are: " + Arrays.toString(bet.getWinningNums().toArray()));
+			GamePlayer finalGamePlayer = gamePlayer;
+			GameOption betOption = new GameOption("bet", Material.GOLD_INGOT, GameOptionType.COUNT, ConfigUtil.GUI_BET_AMOUNT_LABEL.toString(),  "0", true);
+			new GameNumberInventory(gameInventory).build(player, (s, betAmount) -> {
+				if(betAmount > 0 && EconomyUtils.playerTakeMoney(player, betAmount)) {
+					String type = b.getType();
+					int position = b.getPosition();
+					RouletteBet bet = new RouletteBet(type, position, betAmount, clickLoc, teamManager.getTeamByPlayer(finalGamePlayer),
+							this);
 
-			if (!playerBets.containsKey(gamePlayer))
-				playerBets.put(gamePlayer, new ArrayList<RouletteBet>());
+					player.sendMessage("Your numbers for " + type + " are: " + Arrays.toString(bet.getWinningNums().toArray()));
 
-			playerBets.get(gamePlayer).add(bet);
+					if (!playerBets.containsKey(finalGamePlayer))
+						playerBets.put(finalGamePlayer, new ArrayList<RouletteBet>());
 
-			betButtons.add(bet.getButton());
-			buttons.add(bet.getButton());
-			mapManager.renderBoard();
+					playerBets.get(finalGamePlayer).add(bet);
 
-			return;
+					betButtons.add(bet.getButton());
+					buttons.add(bet.getButton());
+					mapManager.renderBoard();
+				}
+			}, betOption, 0);
 		}
 
 		//spin();
@@ -359,7 +407,7 @@ public class Roulette extends Game {
 			}
 
 			player.getPlayer().sendMessage("You won: $" + total);
-
+			EconomyUtils.playerGiveMoney(player.getPlayer(), total);
 		}
 		mapManager.renderBoard();
 		playerBets.clear();
@@ -415,5 +463,10 @@ public class Roulette extends Game {
 	@Override
 	public GameNPC getGameNPC() {
 		return new RouletteNPC(new double[] { 0.5, -1, 1.5 });
+	}
+
+	@Override
+	public boolean allowOutsideClicks() {
+		return true;
 	}
 }

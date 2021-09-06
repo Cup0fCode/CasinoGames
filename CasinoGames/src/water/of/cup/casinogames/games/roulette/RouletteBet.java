@@ -30,6 +30,10 @@ public class RouletteBet {
 		return 0;
 	}
 
+	public double getAmount() {
+		return amount;
+	}
+
 	private double getMultiplier() {
 		switch (type) {
 		case "strait0":
