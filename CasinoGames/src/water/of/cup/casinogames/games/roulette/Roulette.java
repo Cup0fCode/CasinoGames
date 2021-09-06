@@ -205,12 +205,12 @@ public class Roulette extends Game {
 	}
 	
 	private void dealerSendMessage(Player player, String message) {
-		player.sendMessage("Dealer: " + message);
+		player.sendMessage(ConfigUtil.CHAT_ROULETTE_DEALER.toString() + message);
 	}
 
 	protected void dealerSendAll(String message) {
 		for (GamePlayer player : teamManager.getGamePlayers())
-			player.getPlayer().sendMessage("Dealer: " + message);
+			player.getPlayer().sendMessage(ConfigUtil.CHAT_ROULETTE_DEALER.toString() + message);
 	}
 
 	@Override
@@ -326,7 +326,7 @@ public class Roulette extends Game {
 		if (gamePlayer == null) {
 			gamePlayer = this.addPlayer(player);
 			//teamManager.addTeam(gamePlayer);
-			this.dealerSendMessage(player, "Welcome to Roulette.  You're chips are " + teamManager.getTeamByPlayer(gamePlayer).toLowerCase() + ".");
+			this.dealerSendMessage(player, ConfigUtil.CHAT_ROULETTE_WELCOME.buildString(teamManager.getTeamByPlayer(gamePlayer).toLowerCase()));
 			return;
 		}
 			
@@ -350,7 +350,7 @@ public class Roulette extends Game {
 					RouletteBet bet = new RouletteBet(type, position, betAmount, clickLoc, teamManager.getTeamByPlayer(finalGamePlayer),
 							this);
 
-					player.sendMessage("Your numbers for " + type + " are: " + Arrays.toString(bet.getWinningNums().toArray()));
+					player.sendMessage(ConfigUtil.CHAT_ROULETTE_NUMBERS.buildString(type, Arrays.toString(bet.getWinningNums().toArray())));
 
 					if (!playerBets.containsKey(finalGamePlayer))
 						playerBets.put(finalGamePlayer, new ArrayList<RouletteBet>());
@@ -387,7 +387,8 @@ public class Roulette extends Game {
 		if (!spinnerRunnable.isCancelled())
 			spinnerRunnable.cancel();
 		spinnerVal = spinner.getValue();
-		teamManager.getGamePlayers().get(0).getPlayer().sendMessage("value: " + spinnerVal);
+		dealerSendAll(ConfigUtil.CHAT_ROULETTE_SPINNER.buildString(spinnerVal + ""));
+//		teamManager.getGamePlayers().get(0).getPlayer().sendMessage("value: " + spinnerVal); debug?
 		giveBets();
 	}
 
@@ -406,7 +407,7 @@ public class Roulette extends Game {
 				}
 			}
 
-			player.getPlayer().sendMessage("You won: $" + total);
+			player.getPlayer().sendMessage(ConfigUtil.CHAT_ROULETTE_WIN.buildString(total + ""));
 			EconomyUtils.playerGiveMoney(player.getPlayer(), total);
 		}
 		mapManager.renderBoard();

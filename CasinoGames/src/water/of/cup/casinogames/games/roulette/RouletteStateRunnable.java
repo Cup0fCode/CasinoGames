@@ -69,7 +69,7 @@ public class RouletteStateRunnable extends BukkitRunnable {
 			if (timeLeft <= 0) {
 				state = RouletteState.BETTING;
 				timeLeft = BETTING_TIME;
-				game.dealerSendAll("Place your bets!");
+				game.dealerSendAll(ConfigUtil.CHAT_ROULETTE_PLACEBETS.toString());
 				game.clearBetButtons();
 			}
 
@@ -78,11 +78,11 @@ public class RouletteStateRunnable extends BukkitRunnable {
 	}
 
 	public void sendPlayersClockTimes() {
-		String timeText = "Bets close in " + (int) (timeLeft / 60) + ":" + (int) (timeLeft % 60);
+		String timeText = ConfigUtil.CHAT_ROULETTE_START_TIMER.buildString((int) (timeLeft / 60), (int) (timeLeft % 60));
 		for (GamePlayer gamePlayer : game.getGamePlayers())
 			gamePlayer.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR,
 					TextComponent.fromLegacyText(ChatColor.YELLOW + timeText));
-		return;
+
 	}
 
 	private enum RouletteState {
