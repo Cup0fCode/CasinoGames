@@ -21,6 +21,7 @@ import water.of.cup.boardgames.game.inventories.GameOptionType;
 import water.of.cup.boardgames.game.inventories.number.GameNumberInventory;
 import water.of.cup.boardgames.game.npcs.GameNPC;
 import water.of.cup.boardgames.game.storage.GameStorage;
+import water.of.cup.casinogames.config.ConfigUtil;
 import water.of.cup.casinogames.games.gameutils.EconomyUtils;
 import water.of.cup.casinogames.games.gameutils.cards.Card;
 import water.of.cup.casinogames.games.gameutils.cards.Deck;
@@ -251,7 +252,7 @@ public class Blackjack extends Game {
 	}
 
 	private void dealerSendMessage(Player player, String message) {
-		player.sendMessage("Dealer: " + message);
+		player.sendMessage(ConfigUtil.CHAT_BLACKJACK_DEALER.toString() + message);
 	}
 
 	private void dealerSendMessage(int n, String message) {
@@ -263,19 +264,19 @@ public class Blackjack extends Game {
 
 	private void dealerSendAll(String message) {
 		for (GamePlayer player : teamManager.getGamePlayers())
-			player.getPlayer().sendMessage("Dealer: " + message);
+			player.getPlayer().sendMessage(ConfigUtil.CHAT_BLACKJACK_DEALER.toString() + message);
 	}
 
 	private void takeBets() {
 		for (GamePlayer gamePlayer : teamManager.getGamePlayers()) {
 			// askForBet(gamePlayer);
-			dealerSendMessage(gamePlayer.getPlayer(), "Click the table to place your next bet.");
+			dealerSendMessage(gamePlayer.getPlayer(), ConfigUtil.CHAT_BLACKJACK_PLACEBET.toString());
 		}
 	}
 
 	private void askForBet(GamePlayer gamePlayer) {
 		Player player = gamePlayer.getPlayer();
-		GameOption betOption = new GameOption("bet", Material.GOLD_INGOT, GameOptionType.COUNT, "Bet Amount:", "1",
+		GameOption betOption = new GameOption("bet", Material.GOLD_INGOT, GameOptionType.COUNT, ConfigUtil.GUI_BET_AMOUNT_LABEL.toString(), "1",
 				false);
 		new GameNumberInventory(gameInventory).build(player, (s, betAmount) -> {
 			takeBet(gamePlayer, betAmount);
@@ -284,12 +285,12 @@ public class Blackjack extends Game {
 
 	private void takeBet(GamePlayer gamePlayer, int amount) {
 		if (!EconomyUtils.playerTakeMoney(gamePlayer.getPlayer(), amount)) {
-			dealerSendMessage(gamePlayer.getPlayer(), "You do not have enough money for that bet.");
+			dealerSendMessage(gamePlayer.getPlayer(), ConfigUtil.CHAT_BLACKJACK_NOMONEY.toString());
 			return;
 		}
 		int n = this.getPlayerBoardLocation(gamePlayer);
 		playerBets[n] = amount;
-		dealerSendMessage(gamePlayer.getPlayer(), "You bet $" + amount);
+		dealerSendMessage(gamePlayer.getPlayer(), ConfigUtil.CHAT_BLACKJACK_BETAMOUNT.buildString(amount + ""));
 	}
 
 	private void resetPlayersBets() {
@@ -348,7 +349,7 @@ public class Blackjack extends Game {
 		}
 		dealerHand.draw(deck, 2);
 		String dealerCardName = dealerHand.getCards().get(0).getShortName();
-		dealerSendAll("I drew a" + (dealerCardName.charAt(0) == 'A' ? "n " : " ") + dealerCardName + ".");
+		dealerSendAll(ConfigUtil.CHAT_BLACKJACK_DRAWCARD.toString() + (dealerCardName.charAt(0) == 'A' ? "n " : " ") + dealerCardName + ".");
 	}
 
 	private void updateDealerHandButtons(boolean cardDown) {
@@ -598,7 +599,7 @@ public class Blackjack extends Game {
 			teamManager.setTurn(gamePlayerAtLocation[n]);
 			moveCurrentHandButton();
 			this.toggleActionButtons();
-			this.dealerSendMessage(n, "It is now your turn.");
+			this.dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_TURN.toString());
 			turnTimer.start(gamePlayerAtLocation[n].getPlayer());
 			mapManager.renderBoard();
 			npcLookAt(gamePlayerAtLocation[n].getPlayer());
@@ -688,21 +689,21 @@ public class Blackjack extends Game {
 				}
 
 				if (score > 21) {
-					this.dealerSendMessage(n, "Your hand busted, with a total of " + score);
+					this.dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_BUST.buildString(score + ""));
 					continue;
 				}
 
 				if (dealerNaturalBlackjack && !naturalBlackjack) {
 					// dealer wins with naturalBlackJack
-					this.dealerSendMessage(n, "I beat your hand with a natural Blackjack.");
+					this.dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_DEALERWIN.toString());
 					continue;
 				}
 
 				if (dealerScore > 21 || score > dealerScore) {
 					if (dealerScore <= 21)
-						this.dealerSendMessage(n, "Your hand won, beating mine " + score + ":" + dealerScore);
+						this.dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_PLAYERWIN.buildString(score, dealerScore));
 					else
-						this.dealerSendMessage(n, "My hand busted, your hand won");
+						this.dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_DEALERBUST.toString());
 
 					double won = 2;
 
@@ -719,7 +720,7 @@ public class Blackjack extends Game {
 
 				if (dealerNaturalBlackjack && naturalBlackjack || dealerScore == score) {
 					// push
-					this.dealerSendMessage(n, "Our hands tied, Push. " + score + ":" + dealerScore);
+					this.dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_TIE.buildString(score, dealerScore));
 					double won = 1;
 					if (doubleDown)
 						won *= 2;
@@ -730,13 +731,13 @@ public class Blackjack extends Game {
 
 				if (dealerScore > score) {
 					// dealer wins
-					this.dealerSendMessage(n, "Your hand lost to mine. " + score + ":" + dealerScore);
+					this.dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_PLAYERLOSE.buildString(score, dealerScore));
 
 					continue;
 				}
 			}
 			EconomyUtils.playerGiveMoney(gamePlayerAtLocation[n].getPlayer(), payout);
-			this.dealerSendMessage(n, "You won: $" + payout);
+			this.dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_PLAYERWINBET.buildString(payout + ""));
 
 		}
 		this.inRound = false;
@@ -753,24 +754,24 @@ public class Blackjack extends Game {
 		hand.draw(deck);
 		int total = hand.getHandBlackJackTotal();
 		if (total < 21)
-			dealerSendMessage(n, "You hit, your total on this hand is: " + total);
+			dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_PLAYERHIT.buildString(total + ""));
 		else if (total == 21) {
-			dealerSendMessage(n, "Blackjack!");
+			dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_BLACKJACK.toString());
 			nextHand();
 		} else {
-			dealerSendMessage(n, "Bust! Hitting put you at a total of: " + total);
+			dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_PLAYERBUST.buildString(total + ""));
 			nextHand();
 		}
 	}
 
 	private void doubleDown(int n) {
 		if (!EconomyUtils.playerTakeMoney(this.gamePlayerAtLocation[n].getPlayer(), playerBets[n])) {
-			dealerSendMessage(n, "You can't afford to double down.");
+			dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_NOMONEYDOUBLE.toString());
 			return;
 		}
 
 		doubledPlayerHands[n].set(activePlayerHands[n], true);
-		dealerSendMessage(n, "You doubled down, your current bet on this hand is: " + playerBets[n] * 2);
+		dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_DOUBLEDOWN.buildString((playerBets[n] * 2) + ""));
 		Hand currentHand = playerHands[n].get(activePlayerHands[n]);
 		hit(n);
 
@@ -784,7 +785,7 @@ public class Blackjack extends Game {
 	@SuppressWarnings("unchecked")
 	private void split(int n) {
 		if (!EconomyUtils.playerTakeMoney(this.gamePlayerAtLocation[n].getPlayer(), playerBets[n])) {
-			dealerSendMessage(n, "You can't afford to split.");
+			dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_NOMONEYSPLIT.toString());
 			return;
 		}
 
@@ -801,7 +802,7 @@ public class Blackjack extends Game {
 		doubledPlayerHands[n].add(false);
 
 		if (cards.get(0).getBlackJackValue(false) == 1) {
-			dealerSendMessage(n, "You split aces and have no more moves.");
+			dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_SPLITACE.toString());
 			nextTurn();
 		} else {
 			this.updatePlayerHandButtons();
@@ -816,7 +817,7 @@ public class Blackjack extends Game {
 
 	private void insurance(int n) {
 		if (!EconomyUtils.playerTakeMoney(this.gamePlayerAtLocation[n].getPlayer(), playerBets[n] / 2)) {
-			dealerSendMessage(n, "You can't afford insurance.");
+			dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_NOMONEYINSURACE.toString());
 			return;
 		}
 		insuredPlayers[n] = true;
@@ -829,7 +830,7 @@ public class Blackjack extends Game {
 		gamePlayerAtLocation[n] = null;
 		if (!inRound && playerBets[n] != 0) {
 			EconomyUtils.playerGiveMoney(player, playerBets[n]);
-			this.dealerSendMessage(player, "Your bet of $" + playerBets[n] + " was returned to you.");
+			this.dealerSendMessage(player, ConfigUtil.CHAT_BLACKJACK_BETRETURN.buildString(playerBets[n] + ""));
 		}
 
 		playerBets[n] = 0;

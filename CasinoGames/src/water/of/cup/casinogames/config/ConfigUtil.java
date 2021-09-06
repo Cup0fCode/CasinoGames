@@ -48,6 +48,33 @@ public enum ConfigUtil implements ConfigInterface {
     CHAT_SLOTS_WIN("settings.messages.chat.slotswin", "You won: %num%"),
     CHAT_SLOTS_WIN_NEARBY("settings.messages.chat.slotswinnearby", "%player% won %num% playing %game%"),
 
+    // BLACKJACK
+//    CHAT_BLACKJACK_("settings.messages.chat.bj", ""),
+    CHAT_BLACKJACK_DEALER("settings.messages.chat.bjdealer", "Dealer: "),
+    CHAT_BLACKJACK_PLACEBET("settings.messages.chat.bjplacebet", "Click the table to place your next bet."),
+    CHAT_BLACKJACK_NOMONEY("settings.messages.chat.bjnomoney", "You do not have enough money for that bet."),
+    CHAT_BLACKJACK_BETAMOUNT("settings.messages.chat.bjbetamount", "You bet $%num%"),
+    CHAT_BLACKJACK_TURN("settings.messages.chat.bjturn", "It is now your turn."),
+    CHAT_BLACKJACK_BUST("settings.messages.chat.bjbust", "Your hand busted, with a total of %num%"),
+    CHAT_BLACKJACK_DEALERWIN("settings.messages.chat.bjdealerwin", "I beat your hand with a natural Blackjack."),
+    CHAT_BLACKJACK_PLAYERWIN("settings.messages.chat.bjplayerwin", "Your hand won, beating mine %num%:%num2%"),
+    CHAT_BLACKJACK_DEALERBUST("settings.messages.chat.bjdealerbust", "My hand busted, your hand won"),
+    CHAT_BLACKJACK_TIE("settings.messages.chat.bjtie", "Our hands tied, Push. %num%:%num2%"),
+    CHAT_BLACKJACK_PLAYERLOSE("settings.messages.chat.bjplayerlose", "Your hand lost to mine. %num%:%num2%"),
+    CHAT_BLACKJACK_PLAYERWINBET("settings.messages.chat.bjwinbet", "You won: $%num%"),
+    CHAT_BLACKJACK_PLAYERHIT("settings.messages.chat.bjplayerhit", "You hit, your total on this hand is: %num%"),
+    CHAT_BLACKJACK_BLACKJACK("settings.messages.chat.bjblackjack", "Blackjack!"),
+    CHAT_BLACKJACK_PLAYERBUST("settings.messages.chat.bjplayerbust", "Bust! Hitting put you at a total of: %num%"),
+    CHAT_BLACKJACK_NOMONEYDOUBLE("settings.messages.chat.bjnomoneydouble", "You can't afford to double down."),
+    CHAT_BLACKJACK_DOUBLEDOWN("settings.messages.chat.bjdoubledown", "You doubled down, your current bet on this hand is: %num%"),
+    CHAT_BLACKJACK_NOMONEYSPLIT("settings.messages.chat.bjnomoneysplit", "You can't afford to split."),
+    CHAT_BLACKJACK_SPLITACE("settings.messages.chat.bjsplitace", "You split aces and have no more moves."),
+    CHAT_BLACKJACK_NOMONEYINSURACE("settings.messages.chat.bjnomoneyinsurance", "You can't afford insurance."),
+    CHAT_BLACKJACK_BETRETURN("settings.messages.chat.bjbetreturn", "Your bet of $%num% was returned to you."),
+    CHAT_BLACKJACK_DRAWCARD("settings.messages.chat.bjdrawcard", "I drew a"),
+    CHAT_BLACKJACK_START_TIMER("settings.messages.chat.bjgamestarttimer", "Time to next game: %num%:%num2%"),
+    CHAT_BLACKJACK_PLAYER_TIMER("settings.messages.chat.bjgameplayertimer", "%player%'s time left: %num%:%num2%"),
+
     // CARDS
     CARD_SUIT_CLUBS("settings.messages.cards.clubs", "Clubs"),
     CARD_SUIT_DIAMONDS("settings.messages.cards.diamonds", "Diamonds"),
@@ -73,6 +100,10 @@ public enum ConfigUtil implements ConfigInterface {
     NPC_POKER_NAME("settings.messages.npc.pokernpcname", "Dealer"),
     NPC_POKER_SKIN_SIG("settings.messages.npc.pokerskinsig", "T5QGS3fQ9wWvsjmD6l9b/nZMkfOfYW1X3c1xvDdZQ5WHvPmew//3Q86+yfgQqIjPvEcXiDilr71p3WDrz/itsLb5mf9wLU5P4X18x5c6bmmv49TDLUCH5mEIUXu1jiQ8Kog/vzZNGZAAxadTGQPJ7BdII/+OpHDLS+WiCPRMnjCs/1h5RTE7I1OOPQnsh+yk+gOpaxCxgVFMLnMqNnL3mJP05qajHI6OKKXnyyXPwV0xxA3XT2WPbtCPsux3CjNCPP7fA1mYL4dPtdTaju9kP+6jeuf0IkS0jZ31bHKx324cM/W4xiSbR/2OSyYepHdS7TxWPZIYpkMPbaHMLXao7Ok209LD7p3GWZ5RDNvnZTcvGlF10wKoHJ9xy7lHoSfy4NfRAD3doATK5meRo7/JQCCo8M8Mw6dnBvYC9bcb3zCrvTkwQz2dfjkHvmH/QcWkJS5iqYCS6Uk67PJsFtYxa5a9ZBiZGUVxhprrB0hoZem0vfsnzGgzbwjpw0VxDSN1ndXSIJZ4yXB2KI58NE0HMjkVL9OcmOItoS4fqLqdo7CqrntdHsRcDZ7lSaCFVphBMsJI3AbrWAyIM54N9SSMJgpQkrbJ1tWhO1jp8mTXGqW1YlbmCEFS+LRR6sk/F3YK6FtSucJlhlrOdeKGHVaESWLVFzTMBgfVS3TfKSxSRI8="),
     NPC_POKER_SKIN_DATA("settings.messages.npc.pokerskindata", "ewogICJ0aW1lc3RhbXAiIDogMTYxODIxNTU4MTc1OCwKICAicHJvZmlsZUlkIiA6ICJlZDUzZGQ4MTRmOWQ0YTNjYjRlYjY1MWRjYmE3N2U2NiIsCiAgInByb2ZpbGVOYW1lIiA6ICI0MTQxNDE0MWgiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTA0NGNiODMyZDg3Y2RlNmFmNDJhMGRlNDdiYzg1YTY3YzdkNGU1OWEyZDc0NjY2MTc2ZDFjYTQxYWJkMGEyZCIKICAgIH0KICB9Cn0="),
+
+    NPC_BLACKJACK_NAME("settings.messages.npc.bjnpcname", "Dealer"),
+    NPC_BLACKJACK_SKIN_SIG("settings.messages.npc.bjkskinsig", "T5QGS3fQ9wWvsjmD6l9b/nZMkfOfYW1X3c1xvDdZQ5WHvPmew//3Q86+yfgQqIjPvEcXiDilr71p3WDrz/itsLb5mf9wLU5P4X18x5c6bmmv49TDLUCH5mEIUXu1jiQ8Kog/vzZNGZAAxadTGQPJ7BdII/+OpHDLS+WiCPRMnjCs/1h5RTE7I1OOPQnsh+yk+gOpaxCxgVFMLnMqNnL3mJP05qajHI6OKKXnyyXPwV0xxA3XT2WPbtCPsux3CjNCPP7fA1mYL4dPtdTaju9kP+6jeuf0IkS0jZ31bHKx324cM/W4xiSbR/2OSyYepHdS7TxWPZIYpkMPbaHMLXao7Ok209LD7p3GWZ5RDNvnZTcvGlF10wKoHJ9xy7lHoSfy4NfRAD3doATK5meRo7/JQCCo8M8Mw6dnBvYC9bcb3zCrvTkwQz2dfjkHvmH/QcWkJS5iqYCS6Uk67PJsFtYxa5a9ZBiZGUVxhprrB0hoZem0vfsnzGgzbwjpw0VxDSN1ndXSIJZ4yXB2KI58NE0HMjkVL9OcmOItoS4fqLqdo7CqrntdHsRcDZ7lSaCFVphBMsJI3AbrWAyIM54N9SSMJgpQkrbJ1tWhO1jp8mTXGqW1YlbmCEFS+LRR6sk/F3YK6FtSucJlhlrOdeKGHVaESWLVFzTMBgfVS3TfKSxSRI8="),
+    NPC_BLACKJACK_SKIN_DATA("settings.messages.npc.bjskindata", "ewogICJ0aW1lc3RhbXAiIDogMTYxODIxNTU4MTc1OCwKICAicHJvZmlsZUlkIiA6ICJlZDUzZGQ4MTRmOWQ0YTNjYjRlYjY1MWRjYmE3N2U2NiIsCiAgInByb2ZpbGVOYW1lIiA6ICI0MTQxNDE0MWgiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTA0NGNiODMyZDg3Y2RlNmFmNDJhMGRlNDdiYzg1YTY3YzdkNGU1OWEyZDc0NjY2MTc2ZDFjYTQxYWJkMGEyZCIKICAgIH0KICB9Cn0="),
 
     // GUI
     GUI_BOMB_AMOUNT_LABEL("settings.messages.gui.bombamountlabel", "&2Bomb Amount: "),
