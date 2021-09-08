@@ -1,5 +1,6 @@
 package water.of.cup.casinogames.games.gameutils.cards;
 
+import water.of.cup.boardgames.BoardGames;
 import water.of.cup.boardgames.game.GameImage;
 import water.of.cup.boardgames.image_handling.ImageManager;
 import water.of.cup.casinogames.config.ConfigUtil;
@@ -42,7 +43,7 @@ public class Card {
 	}
 
 	public GameImage getGameImage() {
-		GameImage image = new GameImage(ImageManager.getImage("PLAYINGCARDS_" + suit.toString() + "_" + getValue()), 0);
+		GameImage image = new GameImage(BoardGames.getImageManager().getImage("PLAYINGCARDS_" + suit.toString() + "_" + getValue()), 0);
 		return image;
 	}
 

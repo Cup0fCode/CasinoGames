@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import water.of.cup.boardgames.BoardGames;
 import water.of.cup.boardgames.game.GameImage;
 import water.of.cup.boardgames.image_handling.ImageManager;
 
@@ -262,7 +263,7 @@ public class Hand {
 	}
 
 	public GameImage getGameImage(boolean moveCardsDown) {
-		GameImage image = new GameImage(ImageManager.getImage("PLAYINGCARDS_HAND"), 0);
+		GameImage image = new GameImage(BoardGames.getImageManager().getImage("PLAYINGCARDS_HAND"), 0);
 		int x = 0;
 		int y = moveCardsDown ? 103 : 53;
 		for (Card card : cards) {
