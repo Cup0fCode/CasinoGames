@@ -350,7 +350,7 @@ public class Roulette extends Game {
 					RouletteBet bet = new RouletteBet(type, position, betAmount, clickLoc, teamManager.getTeamByPlayer(finalGamePlayer),
 							this);
 
-					player.sendMessage(ConfigUtil.CHAT_ROULETTE_NUMBERS.buildString(type, Arrays.toString(bet.getWinningNums().toArray())));
+//					player.sendMessage(ConfigUtil.CHAT_ROULETTE_NUMBERS.buildString(type, Arrays.toString(bet.getWinningNums().toArray())));
 
 					if (!playerBets.containsKey(finalGamePlayer))
 						playerBets.put(finalGamePlayer, new ArrayList<RouletteBet>());
