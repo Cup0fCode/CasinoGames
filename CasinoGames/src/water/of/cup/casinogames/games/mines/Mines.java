@@ -7,9 +7,11 @@ import org.bukkit.inventory.ItemStack;
 import water.of.cup.boardgames.BoardGames;
 import water.of.cup.boardgames.game.*;
 import water.of.cup.boardgames.game.inventories.GameInventory;
+import water.of.cup.boardgames.game.storage.BoardGamesStorageType;
 import water.of.cup.boardgames.game.storage.GameStorage;
 import water.of.cup.casinogames.config.ConfigUtil;
 import water.of.cup.casinogames.games.gameutils.MathUtils;
+import water.of.cup.casinogames.storage.CasinoGamesStorageType;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -39,7 +41,7 @@ public class Mines extends Game {
             this.betAmount = (int) getGameData("betAmount");
             if (instance.getEconomy().getBalance(teamManager.getTurnPlayer().getPlayer()) < this.betAmount) {
                 teamManager.getTurnPlayer().getPlayer().sendMessage(water.of.cup.boardgames.config.ConfigUtil.CHAT_GUI_GAME_NO_MONEY_CREATE.toString());
-                endGame();
+                endGame(0);
                 return;
             }
 
@@ -120,7 +122,7 @@ public class Mines extends Game {
 
     @Override
     protected GameStorage getGameStorage() {
-        return null;
+        return new MinesStorage(this);
     }
 
     @Override
@@ -154,13 +156,14 @@ public class Mines extends Game {
             player.sendMessage(ConfigUtil.CHAT_MINES_CURRENT_MULT.buildString(multiplier, Math.round((this.betAmount * multiplier) * 100.0) / 100.0));
         } else {
             player.sendMessage(ConfigUtil.CHAT_MINES_LOSE.buildString(multiplier + ""));
-            endGame();
+            endGame(this.betAmount * -1);
         }
 
         mapManager.renderBoard();
     }
 
-    private void endGame() {
+    public void endGame(double amount) {
+        updateGameStorage(teamManager.getTurnPlayer(), amount);
         clearGamePlayers();
         super.endGame(null);
     }
@@ -228,7 +231,17 @@ public class Mines extends Game {
         double payout = Math.round((this.betAmount * multiplier) * 100.0) / 100.0;
         instance.getEconomy().depositPlayer(teamManager.getTurnPlayer().getPlayer(), payout);
         teamManager.getTurnPlayer().getPlayer().sendMessage(ConfigUtil.CHAT_MINES_WIN.buildString(multiplier, payout));
-        endGame();
+        endGame(payout);
+    }
+
+    private void updateGameStorage(GamePlayer gamePlayerWinner, double amount) {
+        if(!hasGameStorage()) return;
+
+        if(gamePlayerWinner != null) {
+            CasinoGamesStorageType storageType = amount < 0 ? CasinoGamesStorageType.MONEY_LOST : CasinoGamesStorageType.MONEY_WON;
+            double increment = amount < 0 ? amount * -1 : amount;
+            gameStorage.updateData(gamePlayerWinner.getPlayer(), storageType, increment);
+        }
     }
 
     @Override
