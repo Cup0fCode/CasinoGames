@@ -163,7 +163,8 @@ public class Mines extends Game {
     }
 
     public void endGame(double amount) {
-        updateGameStorage(teamManager.getTurnPlayer(), amount);
+        CasinoGamesStorageType.updateGameStorage(this, teamManager.getTurnPlayer(), amount);
+
         clearGamePlayers();
         super.endGame(null);
     }
@@ -232,16 +233,6 @@ public class Mines extends Game {
         instance.getEconomy().depositPlayer(teamManager.getTurnPlayer().getPlayer(), payout);
         teamManager.getTurnPlayer().getPlayer().sendMessage(ConfigUtil.CHAT_MINES_WIN.buildString(multiplier, payout));
         endGame(payout);
-    }
-
-    private void updateGameStorage(GamePlayer gamePlayerWinner, double amount) {
-        if(!hasGameStorage()) return;
-
-        if(gamePlayerWinner != null) {
-            CasinoGamesStorageType storageType = amount < 0 ? CasinoGamesStorageType.MONEY_LOST : CasinoGamesStorageType.MONEY_WON;
-            double increment = amount < 0 ? amount * -1 : amount;
-            gameStorage.updateData(gamePlayerWinner.getPlayer(), storageType, increment);
-        }
     }
 
     @Override

@@ -1,5 +1,7 @@
 package water.of.cup.casinogames.storage;
 
+import water.of.cup.boardgames.game.Game;
+import water.of.cup.boardgames.game.GamePlayer;
 import water.of.cup.boardgames.game.storage.StorageType;
 
 import java.sql.JDBCType;
@@ -35,5 +37,15 @@ public enum CasinoGamesStorageType implements StorageType {
 
     public String getQuery() {
         return this.query;
+    }
+
+    public static void updateGameStorage(Game game, GamePlayer gamePlayerWinner, double amount) {
+        if(!game.hasGameStorage()) return;
+
+        if(gamePlayerWinner != null) {
+            CasinoGamesStorageType storageType = amount < 0 ? CasinoGamesStorageType.MONEY_LOST : CasinoGamesStorageType.MONEY_WON;
+            double increment = amount < 0 ? amount * -1 : amount;
+            game.getGameStore().updateData(gamePlayerWinner.getPlayer(), storageType, increment);
+        }
     }
 }

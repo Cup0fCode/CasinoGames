@@ -27,6 +27,7 @@ import water.of.cup.casinogames.games.gameutils.cards.Card;
 import water.of.cup.casinogames.games.gameutils.cards.Deck;
 import water.of.cup.casinogames.games.gameutils.cards.Hand;
 import water.of.cup.casinogames.games.poker.PokerNPC;
+import water.of.cup.casinogames.storage.CasinoGamesStorageType;
 
 public class Blackjack extends Game {
 	boolean inRound;
@@ -502,7 +503,7 @@ public class Blackjack extends Game {
 	@Override
 	protected GameStorage getGameStorage() {
 		// TODO Auto-generated method stub
-		return null;
+		return new BlackjackStorage(this);
 	}
 
 	@Override
@@ -732,11 +733,12 @@ public class Blackjack extends Game {
 				if (dealerScore > score) {
 					// dealer wins
 					this.dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_PLAYERLOSE.buildString(score, dealerScore));
-
+					CasinoGamesStorageType.updateGameStorage(this, gamePlayerAtLocation[n], playerBets[n] * -1);
 					continue;
 				}
 			}
 			EconomyUtils.playerGiveMoney(gamePlayerAtLocation[n].getPlayer(), payout);
+			CasinoGamesStorageType.updateGameStorage(this, gamePlayerAtLocation[n], payout);
 			this.dealerSendMessage(n, ConfigUtil.CHAT_BLACKJACK_PLAYERWINBET.buildString(payout + ""));
 
 		}

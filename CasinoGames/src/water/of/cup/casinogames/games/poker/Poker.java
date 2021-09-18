@@ -15,6 +15,7 @@ import water.of.cup.casinogames.config.ConfigUtil;
 import water.of.cup.casinogames.games.gameutils.cards.Card;
 import water.of.cup.casinogames.games.gameutils.cards.Deck;
 import water.of.cup.casinogames.games.gameutils.cards.Hand;
+import water.of.cup.casinogames.storage.CasinoGamesStorageType;
 
 import java.util.*;
 
@@ -433,7 +434,7 @@ public class Poker extends Game {
 
     @Override
     protected GameStorage getGameStorage() {
-        return null;
+        return new PokerStorageType(this);
     }
 
     @Override
@@ -611,6 +612,8 @@ public class Poker extends Game {
         // Add their bet to the pot
         if(this.playerBets.containsKey(gamePlayer) && this.playerBets.get(gamePlayer) > 0) {
             gamePot += this.playerBets.get(gamePlayer);
+
+            CasinoGamesStorageType.updateGameStorage(this, gamePlayer, this.playerBets.get(gamePlayer) * -1);
         }
 
         this.playerBets.remove(gamePlayer);
@@ -755,6 +758,14 @@ public class Poker extends Game {
         // Send money to players
         for(GamePlayer inGamePlayer : finalPlayers.keySet()) {
             instance.getEconomy().depositPlayer(inGamePlayer.getPlayer(), finalPlayers.get(inGamePlayer));
+            CasinoGamesStorageType.updateGameStorage(this, inGamePlayer, finalPlayers.get(inGamePlayer));
+        }
+
+        // Everyone that lost money
+        for(GamePlayer gamePlayer : playerBets.keySet()) {
+            if(!finalPlayers.containsKey(gamePlayer)) {
+                CasinoGamesStorageType.updateGameStorage(this, gamePlayer, playerBets.get(gamePlayer) * -1);
+            }
         }
 
         // Show cards

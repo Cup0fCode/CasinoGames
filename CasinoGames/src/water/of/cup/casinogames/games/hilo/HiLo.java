@@ -19,6 +19,7 @@ import water.of.cup.boardgames.game.storage.GameStorage;
 import water.of.cup.casinogames.config.ConfigUtil;
 import water.of.cup.casinogames.games.gameutils.cards.Card;
 import water.of.cup.casinogames.games.gameutils.cards.Deck;
+import water.of.cup.casinogames.storage.CasinoGamesStorageType;
 
 public class HiLo extends Game {
 	private BoardGames instance = BoardGames.getInstance();
@@ -109,6 +110,7 @@ public class HiLo extends Game {
 		} else {
 			// loss
 			teamManager.getTurnPlayer().getPlayer().sendMessage(ConfigUtil.CHAT_HILO_LOSE.buildString(bet + ""));
+			CasinoGamesStorageType.updateGameStorage(this, teamManager.getTurnPlayer(), bet * -1);
 			endGame(null);
 		}
 		
@@ -122,6 +124,7 @@ public class HiLo extends Game {
 	private void cashOut() {
 		teamManager.getTurnPlayer().getPlayer().sendMessage(ConfigUtil.CHAT_HILO_WIN.buildString(bet + ""));
 		instance.getEconomy().depositPlayer(teamManager.getTurnPlayer().getPlayer(), bet);
+		CasinoGamesStorageType.updateGameStorage(this, teamManager.getTurnPlayer(), bet);
 		endGame(teamManager.getTurnPlayer());
 	}
 
@@ -171,7 +174,7 @@ public class HiLo extends Game {
 	@Override
 	protected GameStorage getGameStorage() {
 		// TODO Auto-generated method stub
-		return null;
+		return new HiLoStorage(this);
 	}
 
 	@Override

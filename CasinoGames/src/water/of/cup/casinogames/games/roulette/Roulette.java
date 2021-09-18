@@ -28,6 +28,7 @@ import water.of.cup.boardgames.game.storage.GameStorage;
 import water.of.cup.casinogames.config.ConfigUtil;
 import water.of.cup.casinogames.games.blackjack.BlackjackNPC;
 import water.of.cup.casinogames.games.gameutils.EconomyUtils;
+import water.of.cup.casinogames.storage.CasinoGamesStorageType;
 
 public class Roulette extends Game {
 	private RouletteSpinner spinner;
@@ -294,7 +295,7 @@ public class Roulette extends Game {
 	@Override
 	protected GameStorage getGameStorage() {
 		// TODO Auto-generated method stub
-		return null;
+		return new RouletteStorageType(this);
 	}
 
 	@Override
@@ -397,9 +398,11 @@ public class Roulette extends Game {
 		for (GamePlayer player : playerBets.keySet()) {
 			ArrayList<RouletteBet> bets = playerBets.get(player);
 			double total = 0;
+			double betAmount = 0;
 			for (RouletteBet bet : bets) {
 				double win = bet.getWin(spinnerVal);
 				total += win;
+				betAmount += bet.getAmount();
 				if (win == 0) {
 					Button b = bet.getButton();
 					betButtons.remove(b);
@@ -408,6 +411,7 @@ public class Roulette extends Game {
 			}
 
 			player.getPlayer().sendMessage(ConfigUtil.CHAT_ROULETTE_WIN.buildString(total + ""));
+			CasinoGamesStorageType.updateGameStorage(this, player, total == 0 ? betAmount * -1 : total);
 			EconomyUtils.playerGiveMoney(player.getPlayer(), total);
 		}
 		mapManager.renderBoard();
