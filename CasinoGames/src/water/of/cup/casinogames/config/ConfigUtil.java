@@ -72,7 +72,8 @@ public enum ConfigUtil implements ConfigInterface {
     CHAT_BLACKJACK_SPLITACE("settings.messages.chat.bjsplitace", "You split aces and have no more moves."),
     CHAT_BLACKJACK_NOMONEYINSURACE("settings.messages.chat.bjnomoneyinsurance", "You can't afford insurance."),
     CHAT_BLACKJACK_BETRETURN("settings.messages.chat.bjbetreturn", "Your bet of $%num% was returned to you."),
-    CHAT_BLACKJACK_DRAWCARD("settings.messages.chat.bjdrawcard", "I drew a"),
+    CHAT_BLACKJACK_DRAWCARD("settings.messages.chat.bjdrawcard", "I drew a %string%"),
+    CHAT_BLACKJACK_FLIPCARD("settings.messages.chat.bjflipcard", "I flipped a %string%"),
     CHAT_BLACKJACK_START_TIMER("settings.messages.chat.bjgamestarttimer", "Time to next game: %num%:%num2%"),
     CHAT_BLACKJACK_PLAYER_TIMER("settings.messages.chat.bjgameplayertimer", "%player%'s time left: %num%:%num2%"),
 
