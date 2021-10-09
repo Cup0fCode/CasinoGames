@@ -618,6 +618,14 @@ public class Blackjack extends Game {
 
 	private void moveCurrentHandButton() {
 		int n = getPlayerBoardLocation(teamManager.getTurnPlayer());
+		
+		//null pointer check
+		if (n == -1) {
+			currentHandButton.setVisibleForAll(false);
+			return;
+		}
+		
+		
 		Button cardButton = cardButtons[n].get(activePlayerHands[n]).get(0);
 		int[] cardLoc = cardButton.getLocation();
 		int rotation = cardButton.getRotation();
@@ -852,6 +860,10 @@ public class Blackjack extends Game {
 	}
 
 	private void join(Player player, int n) {
+		if (teamManager.getGamePlayer(player) != null) {
+			this.toggleJoinButtons();
+			return;
+		}
 		gamePlayerAtLocation[n] = this.addPlayer(player);
 		teamManager.addTeam(gamePlayerAtLocation[n]);
 		if (!inRound)
