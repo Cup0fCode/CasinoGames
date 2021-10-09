@@ -4,6 +4,8 @@ import org.bukkit.ChatColor;
 import water.of.cup.boardgames.BoardGames;
 import water.of.cup.boardgames.config.ConfigInterface;
 
+import java.text.DecimalFormat;
+
 public enum ConfigUtil implements ConfigInterface {
 
     // CHAT
@@ -185,7 +187,7 @@ public enum ConfigUtil implements ConfigInterface {
 
         formatted = formatted.replace("%player%", player)
                 .replace("%game%", game)
-                .replace("%num%", num + "");
+                .replace("%num%", getFormattedNum(num));
         return formatted;
     }
 
@@ -216,9 +218,13 @@ public enum ConfigUtil implements ConfigInterface {
         String formatted = this.toString();
 
         formatted = formatted
-                .replace("%num%", num + "")
-                .replace("%num2%", num2 + "");
+                .replace("%num%", getFormattedNum(num))
+                .replace("%num2%", getFormattedNum(num2));
 
         return formatted;
+    }
+
+    private String getFormattedNum(Number number) {
+        return new DecimalFormat("#.##").format(number);
     }
 }
