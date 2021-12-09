@@ -744,15 +744,21 @@ public class Poker extends Game {
 
         // Only playerBets can win gamePot
         if(playerBets.size() > 0) {
-            GamePlayer winner = getBestHand(new ArrayList<>(playerBets.keySet()));
-            sendGameMessage(ConfigUtil.CHAT_POKER_WIN_POT.buildString(winner.getPlayer().getDisplayName(), gamePot));
-            finalPlayers.put(winner, gamePot);
+            ArrayList<GamePlayer> winners = getBestHand(new ArrayList<>(playerBets.keySet()));
+            int winAmount = gamePot / winners.size();
+            for(GamePlayer winner : winners) {
+                sendGameMessage(ConfigUtil.CHAT_POKER_WIN_POT.buildString(winner.getPlayer().getDisplayName(), winAmount));
+                finalPlayers.put(winner, winAmount);
+            }
         }
 
         for(SidePot sidePot : this.sidePots) {
-            GamePlayer winner = getBestHand(sidePot.getPotPlayers());
-            sendGameMessage(ConfigUtil.CHAT_POKER_WIN_SIDE_POT.buildString(winner.getPlayer().getDisplayName(), sidePot.getPotAmount()));
-            finalPlayers.put(winner, sidePot.getPotAmount());
+            ArrayList<GamePlayer> winners = getBestHand(sidePot.getPotPlayers());
+            int winAmount = sidePot.getPotAmount() / winners.size();
+            for(GamePlayer winner : winners) {
+                sendGameMessage(ConfigUtil.CHAT_POKER_WIN_SIDE_POT.buildString(winner.getPlayer().getDisplayName(), winAmount));
+                finalPlayers.put(winner, winAmount);
+            }
         }
 
         // Send money to players
@@ -843,14 +849,20 @@ public class Poker extends Game {
         return roundOver;
     }
 
-    private GamePlayer getBestHand(ArrayList<GamePlayer> gamePlayers) {
+    private ArrayList<GamePlayer> getBestHand(ArrayList<GamePlayer> gamePlayers) {
+        ArrayList<GamePlayer> bestPlayerHands = new ArrayList<>();
         HashMap<Hand, GamePlayer> potHands = new HashMap<>();
+
         for(GamePlayer sidePotPlayer : gamePlayers) {
             potHands.put(playerHands.get(sidePotPlayer), sidePotPlayer);
         }
 
-        Hand bestHand = Hand.getBestHand(new ArrayList<>(potHands.keySet()), flopCards.getCards());
-        return potHands.get(bestHand);
+        ArrayList<Hand> bestHands = Hand.getBestHand(new ArrayList<>(potHands.keySet()), flopCards.getCards());
+        for(Hand bestHand : bestHands) {
+            bestPlayerHands.add(potHands.get(bestHand));
+        }
+
+        return bestPlayerHands;
     }
 
     @Override
