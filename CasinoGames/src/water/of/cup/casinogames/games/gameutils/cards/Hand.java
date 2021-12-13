@@ -35,6 +35,14 @@ public class Hand {
 		return getHandPoints(new ArrayList<Card>());
 	}
 
+	public int getCardPoints() {
+		int cardPoints = 0;
+		for(Card card : cards) {
+			cardPoints += card.getPoints();
+		}
+		return cardPoints;
+	}
+
 	public int getHandPoints(ArrayList<Card> extraCards) {
 		ArrayList<Card> handCards = new ArrayList<Card>();
 		handCards.addAll(cards);
@@ -71,15 +79,15 @@ public class Hand {
 
 		// Pair: 1
 		if (pairs.size() == 1) {
-			points = 1000 + pairs.get(0).getHighCard().getPoints();
+			points = 1000 + pairs.get(0).getCardPoints();
 		}
 
 		// Two Pair: 2
 		if (pairs.size() == 2) {
 			int highPoints = 0;
 			for (Hand pair : pairs)
-				if (pair.getHighCard().getPoints() > highPoints)
-					highPoints = pair.getHighCard().getPoints();
+				if (pair.getCardPoints() > highPoints)
+					highPoints = pair.getCardPoints();
 			points = 2000 + highPoints;
 		}
 
@@ -87,8 +95,8 @@ public class Hand {
 		if (threes.size() >= 1) {
 			int highPoints = 0;
 			for (Hand three : threes)
-				if (three.getHighCard().getPoints() > highPoints)
-					highPoints = three.getHighCard().getPoints();
+				if (three.getCardPoints() > highPoints)
+					highPoints = three.getCardPoints();
 			points = 3000 + highPoints;
 		}
 
@@ -113,7 +121,7 @@ public class Hand {
 		boolean hasStrait = straits.size() > 0;
 		if (hasStrait) {
 			Hand strait = straits.get(straits.size() - 1);
-			points = 4000 + strait.getHighCard().getPoints();
+			points = 4000 + strait.getCardPoints();
 		}
 
 		// Flush: 5
@@ -128,7 +136,7 @@ public class Hand {
 		int maxSuitPoints = 0;
 		for (Hand suitHand : suitCards.values()) {
 			if (suitHand.getAmountOfCards() >= 5) {
-				int tempPoints = 5000 + suitHand.getHighCard().getPoints();
+				int tempPoints = 5000 + suitHand.getCardPoints();
 				if (tempPoints > maxSuitPoints)
 					maxSuitPoints = tempPoints;
 			}
@@ -140,11 +148,11 @@ public class Hand {
 		if (threes.size() >= 1 && pairs.size() >= 1) {
 			int highPoints = 0;
 			for (Hand three : threes)
-				if (three.getHighCard().getPoints() > highPoints)
-					highPoints = three.getHighCard().getPoints();
+				if (three.getCardPoints() > highPoints)
+					highPoints = three.getCardPoints();
 			for (Hand pair : pairs)
-				if (pair.getHighCard().getPoints() > highPoints)
-					highPoints = pair.getHighCard().getPoints();
+				if (pair.getCardPoints() > highPoints)
+					highPoints = pair.getCardPoints();
 			points = 6000 + highPoints;
 		}
 
@@ -152,8 +160,8 @@ public class Hand {
 		if (fours.size() >= 1) {
 			int highPoints = 0;
 			for (Hand four : fours)
-				if (four.getHighCard().getPoints() > highPoints)
-					highPoints = four.getHighCard().getPoints();
+				if (four.getCardPoints() > highPoints)
+					highPoints = four.getCardPoints();
 			points = 7000 + highPoints;
 		}
 
@@ -191,7 +199,7 @@ public class Hand {
 			boolean thasStrait = tstraits.size() > 0;
 			if (thasStrait) {
 				Hand strait = tstraits.get(tstraits.size() - 1);
-				int tpoints = 8000 + strait.getHighCard().getPoints();
+				int tpoints = 8000 + strait.getCardPoints();
 				if (tpoints > points)
 					points = tpoints;
 			}
@@ -205,7 +213,7 @@ public class Hand {
 				if (!tHand.containsCardNum(n))
 					continue suitLoop;
 			}
-			int tpoints = 9000 + tHand.getHighCard().getPoints();
+			int tpoints = 9000 + tHand.getCardPoints();
 			if (tpoints > points)
 				points = tpoints;
 		}
@@ -249,7 +257,7 @@ public class Hand {
 
 	}
 
-	public static ArrayList<Hand> getBestHand(ArrayList<Hand> hands, ArrayList<Card> extraCards) {
+	public static Hand getBestHand(ArrayList<Hand> hands, ArrayList<Card> extraCards) {
 		ArrayList<Hand> bestHands = new ArrayList<>();
 
 		int bestHandPoints = 0;
@@ -267,7 +275,17 @@ public class Hand {
 			}
 		}
 
-		return bestHands;
+		if(bestHands.size() > 1) {
+			Hand bestHand = bestHands.get(0);
+			for(Hand hand : hands) {
+				if(hand.getHandPoints() > bestHand.getHandPoints()) {
+					bestHand = hand;
+				}
+			}
+			return bestHand;
+		} else {
+			return bestHands.get(0);
+		}
 	}
 
 	public GameImage getGameImage(boolean moveCardsDown) {

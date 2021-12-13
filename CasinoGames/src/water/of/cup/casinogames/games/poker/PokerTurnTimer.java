@@ -10,7 +10,7 @@ import water.of.cup.casinogames.config.ConfigUtil;
 
 public class PokerTurnTimer extends BukkitRunnable {
 
-    private static double CLOCKTIME = 15;
+//    private static double CLOCKTIME = 15;
     private double lastTimeChange;
     private double timeLeft;
     private Poker game;
@@ -18,14 +18,14 @@ public class PokerTurnTimer extends BukkitRunnable {
 
     public PokerTurnTimer(Poker game) {
         lastTimeChange = System.currentTimeMillis() / 1000;
-        timeLeft = CLOCKTIME;
+        timeLeft =  Float.parseFloat(game.getConfigValue("turn_timer") + "");
         this.game = game;
 
     }
 
     public void start(Player player) {
         lastTimeChange = System.currentTimeMillis() / 1000;
-        timeLeft = CLOCKTIME;
+        timeLeft =  Float.parseFloat(game.getConfigValue("turn_timer") + "");
         this.player = player;
     }
 

@@ -317,7 +317,7 @@ public class Poker extends Game {
         this.sendGameMessage(ConfigUtil.CHAT_POKER_BET_SMALL_BLIND.buildString(smallBlindPlayer.getPlayer().getDisplayName(), BIG_BLIND/2));
 
         this.placeBet(bigBlindPlayer, BIG_BLIND);
-        this.sendGameMessage(ConfigUtil.CHAT_POKER_BET_SMALL_BLIND.buildString(bigBlindPlayer.getPlayer().getDisplayName(), BIG_BLIND));
+        this.sendGameMessage(ConfigUtil.CHAT_POKER_BET_BIG_BLIND.buildString(bigBlindPlayer.getPlayer().getDisplayName(), BIG_BLIND));
 
         this.nextTurn();
     }
@@ -444,7 +444,7 @@ public class Poker extends Game {
 
     @Override
     protected GameConfig getGameConfig() {
-        return null;
+        return new PokerConfig(this);
     }
 
     @Override
@@ -744,21 +744,19 @@ public class Poker extends Game {
 
         // Only playerBets can win gamePot
         if(playerBets.size() > 0) {
-            ArrayList<GamePlayer> winners = getBestHand(new ArrayList<>(playerBets.keySet()));
-            int winAmount = gamePot / winners.size();
-            for(GamePlayer winner : winners) {
-                sendGameMessage(ConfigUtil.CHAT_POKER_WIN_POT.buildString(winner.getPlayer().getDisplayName(), winAmount));
-                finalPlayers.put(winner, winAmount);
-            }
+            GamePlayer winner = getBestHand(new ArrayList<>(playerBets.keySet()));
+            int winAmount = gamePot;
+
+            sendGameMessage(ConfigUtil.CHAT_POKER_WIN_POT.buildString(winner.getPlayer().getDisplayName(), winAmount));
+            finalPlayers.put(winner, winAmount);
         }
 
         for(SidePot sidePot : this.sidePots) {
-            ArrayList<GamePlayer> winners = getBestHand(sidePot.getPotPlayers());
-            int winAmount = sidePot.getPotAmount() / winners.size();
-            for(GamePlayer winner : winners) {
-                sendGameMessage(ConfigUtil.CHAT_POKER_WIN_SIDE_POT.buildString(winner.getPlayer().getDisplayName(), winAmount));
-                finalPlayers.put(winner, winAmount);
-            }
+            GamePlayer winner = getBestHand(sidePot.getPotPlayers());
+            int winAmount = sidePot.getPotAmount();
+
+            sendGameMessage(ConfigUtil.CHAT_POKER_WIN_SIDE_POT.buildString(winner.getPlayer().getDisplayName(), winAmount));
+            finalPlayers.put(winner, winAmount);
         }
 
         // Send money to players
@@ -849,20 +847,16 @@ public class Poker extends Game {
         return roundOver;
     }
 
-    private ArrayList<GamePlayer> getBestHand(ArrayList<GamePlayer> gamePlayers) {
-        ArrayList<GamePlayer> bestPlayerHands = new ArrayList<>();
+    private GamePlayer getBestHand(ArrayList<GamePlayer> gamePlayers) {
         HashMap<Hand, GamePlayer> potHands = new HashMap<>();
 
         for(GamePlayer sidePotPlayer : gamePlayers) {
             potHands.put(playerHands.get(sidePotPlayer), sidePotPlayer);
         }
 
-        ArrayList<Hand> bestHands = Hand.getBestHand(new ArrayList<>(potHands.keySet()), flopCards.getCards());
-        for(Hand bestHand : bestHands) {
-            bestPlayerHands.add(potHands.get(bestHand));
-        }
+        Hand winningHand = Hand.getBestHand(new ArrayList<>(potHands.keySet()), flopCards.getCards());
 
-        return bestPlayerHands;
+        return potHands.get(winningHand);
     }
 
     @Override
