@@ -35,13 +35,13 @@ public class Hand {
 		return getHandPoints(new ArrayList<Card>());
 	}
 
-	public int getCardPoints() {
-		int cardPoints = 0;
-		for(Card card : cards) {
-			cardPoints += card.getPoints();
-		}
-		return cardPoints;
-	}
+//	public int getCardPoints() {
+//		int cardPoints = 0;
+//		for(Card card : cards) {
+//			cardPoints += card.getPoints();
+//		}
+//		return cardPoints;
+//	}
 
 	public int getHandPoints(ArrayList<Card> extraCards) {
 		ArrayList<Card> handCards = new ArrayList<Card>();
@@ -79,15 +79,15 @@ public class Hand {
 
 		// Pair: 1
 		if (pairs.size() == 1) {
-			points = 1000 + pairs.get(0).getCardPoints();
+			points = 1000 + pairs.get(0).getHighCard().getPoints();
 		}
 
 		// Two Pair: 2
 		if (pairs.size() == 2) {
 			int highPoints = 0;
 			for (Hand pair : pairs)
-				if (pair.getCardPoints() > highPoints)
-					highPoints = pair.getCardPoints();
+				if (pair.getHighCard().getPoints() > highPoints)
+					highPoints = pair.getHighCard().getPoints();
 			points = 2000 + highPoints;
 		}
 
@@ -95,8 +95,8 @@ public class Hand {
 		if (threes.size() >= 1) {
 			int highPoints = 0;
 			for (Hand three : threes)
-				if (three.getCardPoints() > highPoints)
-					highPoints = three.getCardPoints();
+				if (three.getHighCard().getPoints() > highPoints)
+					highPoints = three.getHighCard().getPoints();
 			points = 3000 + highPoints;
 		}
 
@@ -121,7 +121,7 @@ public class Hand {
 		boolean hasStrait = straits.size() > 0;
 		if (hasStrait) {
 			Hand strait = straits.get(straits.size() - 1);
-			points = 4000 + strait.getCardPoints();
+			points = 4000 + strait.getHighCard().getPoints();
 		}
 
 		// Flush: 5
@@ -136,7 +136,7 @@ public class Hand {
 		int maxSuitPoints = 0;
 		for (Hand suitHand : suitCards.values()) {
 			if (suitHand.getAmountOfCards() >= 5) {
-				int tempPoints = 5000 + suitHand.getCardPoints();
+				int tempPoints = 5000 + suitHand.getHighCard().getPoints();
 				if (tempPoints > maxSuitPoints)
 					maxSuitPoints = tempPoints;
 			}
@@ -148,11 +148,11 @@ public class Hand {
 		if (threes.size() >= 1 && pairs.size() >= 1) {
 			int highPoints = 0;
 			for (Hand three : threes)
-				if (three.getCardPoints() > highPoints)
-					highPoints = three.getCardPoints();
+				if (three.getHighCard().getPoints() > highPoints)
+					highPoints = three.getHighCard().getPoints();
 			for (Hand pair : pairs)
-				if (pair.getCardPoints() > highPoints)
-					highPoints = pair.getCardPoints();
+				if (pair.getHighCard().getPoints() > highPoints)
+					highPoints = pair.getHighCard().getPoints();
 			points = 6000 + highPoints;
 		}
 
@@ -160,8 +160,8 @@ public class Hand {
 		if (fours.size() >= 1) {
 			int highPoints = 0;
 			for (Hand four : fours)
-				if (four.getCardPoints() > highPoints)
-					highPoints = four.getCardPoints();
+				if (four.getHighCard().getPoints() > highPoints)
+					highPoints = four.getHighCard().getPoints();
 			points = 7000 + highPoints;
 		}
 
@@ -199,7 +199,7 @@ public class Hand {
 			boolean thasStrait = tstraits.size() > 0;
 			if (thasStrait) {
 				Hand strait = tstraits.get(tstraits.size() - 1);
-				int tpoints = 8000 + strait.getCardPoints();
+				int tpoints = 8000 + strait.getHighCard().getPoints();
 				if (tpoints > points)
 					points = tpoints;
 			}
@@ -213,7 +213,7 @@ public class Hand {
 				if (!tHand.containsCardNum(n))
 					continue suitLoop;
 			}
-			int tpoints = 9000 + tHand.getCardPoints();
+			int tpoints = 9000 + tHand.getHighCard().getPoints();
 			if (tpoints > points)
 				points = tpoints;
 		}
