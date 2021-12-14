@@ -9,7 +9,7 @@ import water.of.cup.boardgames.game.GameImage;
 import water.of.cup.boardgames.image_handling.ImageManager;
 
 public class Hand {
-	ArrayList<Card> cards;
+	private ArrayList<Card> cards;
 
 	public Hand() {
 		cards = new ArrayList<Card>();
