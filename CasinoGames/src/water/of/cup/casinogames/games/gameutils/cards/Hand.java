@@ -275,6 +275,7 @@ public class Hand {
 			}
 		}
 
+		// If they share best hand in/with flop, go to best individual hand
 		if(bestHands.size() > 1) {
 			Hand bestHand = bestHands.get(0);
 			for(Hand hand : hands) {
@@ -284,6 +285,7 @@ public class Hand {
 			}
 			return bestHand;
 		} else {
+			// Best hand / highest point card in hand
 			return bestHands.get(0);
 		}
 	}
