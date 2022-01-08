@@ -278,7 +278,7 @@ public class Blackjack extends Game {
 	private void askForBet(GamePlayer gamePlayer) {
 		Player player = gamePlayer.getPlayer();
 		GameOption betOption = new GameOption("bet", Material.GOLD_INGOT, GameOptionType.COUNT, ConfigUtil.GUI_BET_AMOUNT_LABEL.toString(), "1",
-				false);
+				true, 1, getMaxWager());
 		new GameNumberInventory(gameInventory).build(player, (s, betAmount) -> {
 			takeBet(gamePlayer, betAmount);
 		}, betOption, 1);

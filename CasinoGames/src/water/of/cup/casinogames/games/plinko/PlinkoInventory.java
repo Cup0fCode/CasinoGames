@@ -26,7 +26,7 @@ public class PlinkoInventory extends GameInventory {
 	@Override
 	protected ArrayList<GameOption> getOptions() {
 		ArrayList<GameOption> options = new ArrayList<GameOption>();
-		GameOption bet = new GameOption("betAmount", Material.GOLD_NUGGET, GameOptionType.COUNT, null, "0", true);
+		GameOption bet = new GameOption("betAmount", Material.GOLD_NUGGET, GameOptionType.COUNT, null, "1", true, 1, game.getMaxWager());
 		options.add(bet);
 
 		List<String> riskValues = Arrays.asList(ConfigUtil.GUI_PLINKO_LOW_RISK.toString(), ConfigUtil.GUI_PLINKO_NORMAL_RISK.toString(), ConfigUtil.GUI_PLINKO_HIGH_RISK.toString());

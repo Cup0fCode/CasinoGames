@@ -20,7 +20,7 @@ public class HiLoInventory extends GameInventory {
     @Override
     protected ArrayList<GameOption> getOptions() {
         ArrayList<GameOption> options = new ArrayList<GameOption>();
-        GameOption bet = new GameOption("betAmount", Material.GOLD_NUGGET, GameOptionType.COUNT, ConfigUtil.GUI_BET_AMOUNT_LABEL.toString(), "1", true, 1, Integer.MAX_VALUE);
+        GameOption bet = new GameOption("betAmount", Material.GOLD_NUGGET, GameOptionType.COUNT, ConfigUtil.GUI_BET_AMOUNT_LABEL.toString(), "1", true, 1, game.getMaxWager());
         options.add(bet);
 
         return options;

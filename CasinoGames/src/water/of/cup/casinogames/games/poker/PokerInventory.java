@@ -26,7 +26,7 @@ public class PokerInventory extends GameInventory {
         GameOption minEntry = new GameOption("minEntry", Material.GOLD_NUGGET, GameOptionType.COUNT, ConfigUtil.GUI_POKER_MIN_ENTRY_LABEL.toString(), "1", true, 1, Integer.MAX_VALUE);
         options.add(minEntry);
 
-        GameOption raiseLimit = new GameOption("raiseLimit", Material.GOLD_NUGGET, GameOptionType.COUNT, ConfigUtil.GUI_POKER_RAISE_LIMIT_LABEL.toString(), "1", false, 1, Integer.MAX_VALUE);
+        GameOption raiseLimit = new GameOption("raiseLimit", Material.GOLD_NUGGET, GameOptionType.COUNT, ConfigUtil.GUI_POKER_RAISE_LIMIT_LABEL.toString(), "1", false, 1, game.getMaxWager());
         options.add(raiseLimit);
         return options;
     }

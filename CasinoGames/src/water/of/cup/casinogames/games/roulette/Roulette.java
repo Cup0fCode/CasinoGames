@@ -343,7 +343,7 @@ public class Roulette extends Game {
 		if (b != null) {
 			// bet Button clicked
 			GamePlayer finalGamePlayer = gamePlayer;
-			GameOption betOption = new GameOption("bet", Material.GOLD_INGOT, GameOptionType.COUNT, ConfigUtil.GUI_BET_AMOUNT_LABEL.toString(),  "0", true);
+			GameOption betOption = new GameOption("bet", Material.GOLD_INGOT, GameOptionType.COUNT, ConfigUtil.GUI_BET_AMOUNT_LABEL.toString(),  "0", true, 0, getMaxWager());
 			new GameNumberInventory(gameInventory).build(player, (s, betAmount) -> {
 				if(betAmount > 0 && EconomyUtils.playerTakeMoney(player, betAmount)) {
 					String type = b.getType();
